@@ -40,6 +40,8 @@ interface MemberDashboardViewProps {
   onSendMessage: (msg: string) => void;
   onJoinByCode?: (code: string) => void;
   onOpenExploreModal?: () => void;
+  onOpenBankConfigModal?: () => void;
+  onOpenRegisterBankModal?: (targetMember?: HuiMember) => void;
 }
 
 export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
@@ -55,6 +57,8 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
   onSendMessage,
   onJoinByCode,
   onOpenExploreModal,
+  onOpenBankConfigModal,
+  onOpenRegisterBankModal,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'my_status' | 'bid_portal' | 'public_ledger' | 'chat'>('my_status');
   const [bidAmountInput, setBidAmountInput] = useState<number>(huiDay.shareAmount * 0.15); // ~15% default
@@ -399,10 +403,21 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
 
             {/* Bank Info of Host */}
             <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
-              <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
-                <ShieldCheck className="h-4 w-4 text-emerald-400" />
-                <span>Tài Khoản Nhận Tiền Của Chủ Hụi</span>
-              </h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
+                  <ShieldCheck className="h-4 w-4 text-emerald-400" />
+                  <span>Tài Khoản Nhận Tiền Của Chủ Hụi</span>
+                </h4>
+                {(currentUser.role === 'chu_hui' || currentUser.id === huiDay.hostId) && onOpenBankConfigModal && (
+                  <button
+                    onClick={onOpenBankConfigModal}
+                    className="text-[11px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold px-2 py-0.5 rounded-lg border border-amber-500/30 flex items-center space-x-1 transition-all"
+                  >
+                    <QrCode className="h-3 w-3" />
+                    <span>Sửa VietQR</span>
+                  </button>
+                )}
+              </div>
 
               <div className="p-4 bg-slate-950 rounded-xl border border-slate-800/80 space-y-2 text-xs">
                 <div className="flex justify-between">
@@ -415,9 +430,97 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
                 </div>
                 <div className="flex justify-between">
                   <span className="text-slate-400">Chủ tài khoản:</span>
-                  <span className="text-white font-bold">{huiDay.bankConfig.accountName}</span>
+                  <span className="text-white font-bold uppercase">{huiDay.bankConfig.accountName}</span>
                 </div>
               </div>
+            </div>
+
+            {/* Member's Own Registered Bank Account for Payout */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-3">
+              <div className="flex items-center justify-between">
+                <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider flex items-center space-x-1.5">
+                  <Wallet className="h-4 w-4 text-emerald-400" />
+                  <span>Tài Khoản Nhận Tiền Hốt Hụi Của Bạn</span>
+                </h4>
+                {onOpenRegisterBankModal && (
+                  <button
+                    onClick={() => onOpenRegisterBankModal(myMemberRecord)}
+                    className="text-[11px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold px-2.5 py-1 rounded-lg border border-emerald-500/30 flex items-center space-x-1 transition-all"
+                  >
+                    <Plus className="h-3 w-3" />
+                    <span>{myMemberRecord?.bankConfig || myMemberRecord?.pendingBankConfig ? 'Đổi/Cập Nhật' : 'Đăng Ký Mới'}</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Status Display */}
+              {myMemberRecord?.bankConfig ? (
+                <div className="p-4 bg-slate-950 rounded-xl border border-emerald-500/30 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-emerald-400 font-bold flex items-center space-x-1">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                      <span>Đã được Chủ Hụi phê duyệt</span>
+                    </span>
+                    <span className="text-[10px] text-slate-400 font-mono">Chỉ Chủ Hụi nhìn thấy</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-900 space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Ngân hàng:</span>
+                      <span className="text-white font-bold">{myMemberRecord.bankConfig.bankCode} ({myMemberRecord.bankConfig.bankName})</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Số tài khoản:</span>
+                      <span className="text-emerald-400 font-mono font-bold">{myMemberRecord.bankConfig.accountNumber}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Tên chủ tài khoản:</span>
+                      <span className="text-white font-bold uppercase">{myMemberRecord.bankConfig.accountName}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : myMemberRecord?.pendingBankConfig ? (
+                <div className="p-4 bg-slate-950 rounded-xl border border-amber-500/30 space-y-2 text-xs">
+                  <div className="flex items-center justify-between">
+                    <span className="text-amber-400 font-bold flex items-center space-x-1">
+                      <Clock className="h-3.5 w-3.5 animate-spin" />
+                      <span>Đang chờ Chủ Hụi phê duyệt</span>
+                    </span>
+                    <span className="text-[10px] text-amber-300">Đã gửi yêu cầu</span>
+                  </div>
+                  <div className="pt-2 border-t border-slate-900 space-y-1">
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Ngân hàng yêu cầu:</span>
+                      <span className="text-white font-bold">{myMemberRecord.pendingBankConfig.bankCode} ({myMemberRecord.pendingBankConfig.bankName})</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Số tài khoản:</span>
+                      <span className="text-amber-300 font-mono font-bold">{myMemberRecord.pendingBankConfig.accountNumber}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span className="text-slate-400">Tên chủ tài khoản:</span>
+                      <span className="text-white font-bold uppercase">{myMemberRecord.pendingBankConfig.accountName}</span>
+                    </div>
+                  </div>
+                </div>
+              ) : (
+                <div className="p-4 bg-slate-950 rounded-xl border border-amber-500/30 text-xs space-y-2 text-center">
+                  <p className="text-amber-300 font-bold">
+                    Bạn chưa đăng ký tài khoản ngân hàng để nhận tiền hốt hụi!
+                  </p>
+                  <p className="text-[11px] text-slate-400 leading-relaxed">
+                    🔒 Vì lý do an toàn & quyền riêng tư, thông tin này chỉ duy nhất <strong>Chủ Hụi</strong> nhìn thấy để bắn VietQR hốt hụi khi bạn trúng thăm.
+                  </p>
+                  {onOpenRegisterBankModal && (
+                    <button
+                      onClick={() => onOpenRegisterBankModal(myMemberRecord)}
+                      className="mt-2 w-full py-2.5 bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-extrabold rounded-xl shadow-lg shadow-emerald-500/20 text-xs flex items-center justify-center space-x-1.5 transition-all"
+                    >
+                      <Plus className="h-4 w-4" />
+                      <span>Đăng Ký Tài Khoản Nhận Tiền Ngay</span>
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
 
           </div>

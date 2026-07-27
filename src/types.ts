@@ -12,8 +12,12 @@ export interface User {
   idCardFrontUrl?: string;
   idCardBackUrl?: string;
   bankName?: string;
+  bankCode?: string;
   accountNumber?: string;
   accountName?: string;
+  bankConfig?: BankConfig;
+  pendingBankConfig?: BankConfig;
+  bankApprovalStatus?: 'none' | 'pending' | 'approved' | 'rejected';
 }
 
 export type CycleType = 'daily' | 'weekly' | 'ten_days' | 'half_month' | 'monthly' | 'custom';
@@ -74,6 +78,10 @@ export interface HuiMember {
   idCardFrontUrl?: string;
   idCardBackUrl?: string;
   kycStatus?: 'verified' | 'pending_verification' | 'unverified';
+  bankConfig?: BankConfig;
+  pendingBankConfig?: BankConfig;
+  bankApprovalStatus?: 'none' | 'pending' | 'approved' | 'rejected';
+  bankRejectionNote?: string;
 }
 
 export type RoundStatus = 'bidding' | 'calculating' | 'payment_pending' | 'completed';

@@ -11,7 +11,8 @@ import {
   Monitor, 
   LogOut, 
   HelpCircle,
-  Coins
+  Coins,
+  QrCode
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -23,6 +24,7 @@ interface NavbarProps {
   onToggleMobileFrame: () => void;
   onOpenCreateModal: () => void;
   onOpenExploreModal?: () => void;
+  onOpenBankConfigModal?: () => void;
   onOpenAuthModal: () => void;
   onLogout?: () => void;
 }
@@ -36,6 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onToggleMobileFrame,
   onOpenCreateModal,
   onOpenExploreModal,
+  onOpenBankConfigModal,
   onOpenAuthModal,
   onLogout,
 }) => {
@@ -103,17 +106,31 @@ export const Navbar: React.FC<NavbarProps> = ({
               </button>
             )}
 
-            {/* Create New Hui Day Button - EXCLUSIVE TO CHỦ HỤI / HOST ADMIN */}
+            {/* Create New Hui Day & Bank Config Buttons - EXCLUSIVE TO CHỦ HỤI / HOST ADMIN */}
             {currentUser.role === 'chu_hui' && (
-              <button
-                onClick={onOpenCreateModal}
-                className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center space-x-1.5 transition-all active:scale-95"
-                title="Quyền dành riêng cho Chủ Hụi: Khởi tạo dây hụi mới"
-              >
-                <PlusCircle className="h-4 w-4" />
-                <span className="hidden sm:inline">Tạo Dây Hụi Mới</span>
-                <span className="sm:hidden">+ Tạo Dây</span>
-              </button>
+              <>
+                {onOpenBankConfigModal && (
+                  <button
+                    onClick={onOpenBankConfigModal}
+                    className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:border-amber-400 font-bold text-xs sm:text-sm px-3 py-2 rounded-xl flex items-center space-x-1.5 transition-all active:scale-95"
+                    title="Cấu hình tài khoản ngân hàng Chủ Hụi để nhận tiền đóng hụi qua VietQR"
+                  >
+                    <QrCode className="h-4 w-4 text-amber-400" />
+                    <span className="hidden xl:inline">TK Ngân Hàng VietQR</span>
+                    <span className="xl:hidden">VietQR</span>
+                  </button>
+                )}
+
+                <button
+                  onClick={onOpenCreateModal}
+                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center space-x-1.5 transition-all active:scale-95"
+                  title="Quyền dành riêng cho Chủ Hụi: Khởi tạo dây hụi mới"
+                >
+                  <PlusCircle className="h-4 w-4" />
+                  <span className="hidden sm:inline">Tạo Dây Hụi Mới</span>
+                  <span className="sm:hidden">+ Tạo Dây</span>
+                </button>
+              </>
             )}
 
             {/* Role Switcher Toggle */}

@@ -23,7 +23,12 @@ import {
   ArrowRight,
   TrendingUp,
   Building2,
-  ListFilter
+  ListFilter,
+  Lock,
+  CreditCard,
+  Wallet,
+  XCircle,
+  Plus
 } from 'lucide-react';
 
 interface HuiDetailViewProps {
@@ -41,6 +46,10 @@ interface HuiDetailViewProps {
   onSendMessage: (msg: string) => void;
   onApproveMember?: (memberId: string) => void;
   onRejectMember?: (memberId: string) => void;
+  onOpenBankConfigModal?: () => void;
+  onOpenRegisterBankModal?: (targetMember?: HuiMember) => void;
+  onApproveMemberBank?: (memberId: string) => void;
+  onRejectMemberBank?: (memberId: string) => void;
 }
 
 export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
@@ -58,6 +67,10 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
   onSendMessage,
   onApproveMember,
   onRejectMember,
+  onOpenBankConfigModal,
+  onOpenRegisterBankModal,
+  onApproveMemberBank,
+  onRejectMemberBank,
 }) => {
   const [activeTab, setActiveTab] = useState<'ledger' | 'bidding' | 'chat' | 'config' | 'members'>('ledger');
   const [bidAmountInput, setBidAmountInput] = useState<number>(huiDay.shareAmount * 0.2); // Default ~20%
@@ -680,10 +693,24 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
               </span>
             </div>
 
-            <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-1">
-              <span className="text-slate-400 block">Ngân Hàng VietQR</span>
-              <span className="text-sm font-bold text-white font-mono">
-                {huiDay.bankConfig.bankCode} - {huiDay.bankConfig.accountNumber} ({huiDay.bankConfig.accountName})
+            <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-1 relative">
+              <div className="flex items-center justify-between">
+                <span className="text-slate-400 block">Ngân Hàng VietQR Nhận Tiền</span>
+                {(currentUser.role === 'chu_hui' || currentUser.id === huiDay.hostId) && onOpenBankConfigModal && (
+                  <button
+                    onClick={onOpenBankConfigModal}
+                    className="text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold px-2.5 py-1 rounded-lg border border-amber-500/30 flex items-center space-x-1 transition-all"
+                  >
+                    <QrCode className="h-3.5 w-3.5" />
+                    <span>Chỉnh Sửa TK</span>
+                  </button>
+                )}
+              </div>
+              <span className="text-sm font-bold text-amber-400 font-mono block pt-1">
+                {huiDay.bankConfig.bankCode} - {huiDay.bankConfig.accountNumber}
+              </span>
+              <span className="text-xs text-slate-300 font-semibold uppercase block">
+                {huiDay.bankConfig.accountName} ({huiDay.bankConfig.bankName})
               </span>
             </div>
           </div>
@@ -806,28 +833,195 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
             )}
           </div>
 
+          {/* Section 1.5: Host Approval for Member Bank Accounts */}
+          {(currentUser.role === 'chu_hui' || currentUser.id === huiDay.hostId) && (
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+                <div className="flex items-center space-x-2">
+                  <CreditCard className="h-5 w-5 text-emerald-400" />
+                  <h3 className="text-base font-bold text-white">
+                    Duyệt Yêu Cầu Đăng Ký / Thay Đổi TK Ngân Hàng Nhận Tiền ({approvedMembers.filter(m => m.bankApprovalStatus === 'pending' || m.pendingBankConfig).length})
+                  </h3>
+                </div>
+                <span className="text-xs text-emerald-400 font-mono flex items-center space-x-1">
+                  <Lock className="h-3.5 w-3.5" />
+                  <span>Quyền Hạn Chủ Hụi</span>
+                </span>
+              </div>
+
+              {approvedMembers.filter(m => m.bankApprovalStatus === 'pending' || m.pendingBankConfig).length === 0 ? (
+                <div className="text-center py-6 bg-slate-950/60 rounded-xl border border-slate-800/80 space-y-1">
+                  <CheckCircle2 className="h-6 w-6 text-emerald-500 mx-auto" />
+                  <p className="text-xs text-slate-400">Không có yêu cầu đăng ký/thay đổi tài khoản ngân hàng nào đang chờ duyệt.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {approvedMembers.filter(m => m.bankApprovalStatus === 'pending' || m.pendingBankConfig).map((m) => {
+                    const cfg = m.pendingBankConfig || m.bankConfig;
+                    return (
+                      <div key={`bank_req_${m.id}`} className="bg-slate-950 border border-emerald-500/40 rounded-xl p-4 space-y-3 shadow-lg">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center space-x-3">
+                            <img src={m.userAvatar} alt={m.userName} className="h-9 w-9 rounded-xl object-cover" />
+                            <div>
+                              <h4 className="font-bold text-white text-sm">{m.userName}</h4>
+                              <p className="text-xs text-slate-400">{m.userPhone}</p>
+                            </div>
+                          </div>
+                          <span className="px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 text-[10px] font-bold rounded">
+                            Chờ duyệt TK
+                          </span>
+                        </div>
+
+                        {cfg && (
+                          <div className="p-3 bg-slate-900 rounded-xl border border-slate-800 text-xs space-y-1 font-mono">
+                            <div className="flex justify-between text-slate-300">
+                              <span className="text-slate-400 font-sans">Ngân hàng:</span>
+                              <strong className="text-emerald-400">{cfg.bankCode} ({cfg.bankName})</strong>
+                            </div>
+                            <div className="flex justify-between text-slate-300">
+                              <span className="text-slate-400 font-sans">Số tài khoản:</span>
+                              <strong className="text-amber-300">{cfg.accountNumber}</strong>
+                            </div>
+                            <div className="flex justify-between text-slate-300">
+                              <span className="text-slate-400 font-sans">Tên chủ TK:</span>
+                              <strong className="text-white uppercase">{cfg.accountName}</strong>
+                            </div>
+                          </div>
+                        )}
+
+                        <div className="flex items-center space-x-2 pt-1 border-t border-slate-900">
+                          <button
+                            onClick={() => onApproveMemberBank && onApproveMemberBank(m.id)}
+                            className="flex-1 py-2 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-md shadow-emerald-500/20 flex items-center justify-center space-x-1 transition-all"
+                          >
+                            <CheckCircle2 className="h-4 w-4" />
+                            <span>Duyệt TK Ngân Hàng</span>
+                          </button>
+
+                          <button
+                            onClick={() => onOpenRegisterBankModal && onOpenRegisterBankModal(m)}
+                            className="py-2 px-3 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 border border-amber-500/30 font-bold text-xs rounded-xl transition-all"
+                          >
+                            Sửa TK
+                          </button>
+
+                          <button
+                            onClick={() => onRejectMemberBank && onRejectMemberBank(m.id)}
+                            className="py-2 px-2.5 bg-rose-500/10 hover:bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold text-xs rounded-xl transition-all"
+                          >
+                            Từ Chối
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
+
           {/* Section 2: Approved Official Members */}
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
-            <h3 className="text-base font-bold text-white border-b border-slate-800 pb-3 flex items-center space-x-2">
-              <ShieldCheck className="h-5 w-5 text-emerald-400" />
-              <span>Hội Viên Chính Thức Của Dây Hụi ({approvedMembers.length} thành viên)</span>
-            </h3>
+            <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-white flex items-center space-x-2">
+                <ShieldCheck className="h-5 w-5 text-emerald-400" />
+                <span>Hội Viên Chính Thức Của Dây Hụi ({approvedMembers.length} thành viên)</span>
+              </h3>
+              <span className="text-xs text-slate-400 flex items-center space-x-1">
+                <Lock className="h-3.5 w-3.5 text-amber-400" />
+                <span>Bảo mật TK Ngân Hàng</span>
+              </span>
+            </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
-              {approvedMembers.map((m) => (
-                <div key={m.id} className="p-3 bg-slate-950 rounded-xl border border-slate-800 flex items-center justify-between">
-                  <div className="flex items-center space-x-2.5">
-                    <img src={m.userAvatar} alt={m.userName} className="h-8 w-8 rounded-lg object-cover" />
-                    <div>
-                      <span className="font-bold text-xs text-white block">{m.userName}</span>
-                      <span className="text-[10px] text-slate-400">{m.userPhone}</span>
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {approvedMembers.map((m) => {
+                const isMe = m.userId === currentUser.id;
+                const isHost = currentUser.role === 'chu_hui' || currentUser.id === huiDay.hostId;
+                const canSeeBank = isHost || isMe;
+
+                return (
+                  <div key={m.id} className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800/80 space-y-2.5">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center space-x-2.5">
+                        <img src={m.userAvatar} alt={m.userName} className="h-9 w-9 rounded-xl object-cover ring-1 ring-slate-700" />
+                        <div>
+                          <span className="font-bold text-xs text-white block flex items-center space-x-1">
+                            <span>{m.userName}</span>
+                            {isMe && <span className="text-[9px] bg-amber-500/20 text-amber-300 px-1.5 py-0.2 rounded font-mono">Bạn</span>}
+                          </span>
+                          <span className="text-[10px] text-slate-400">{m.userPhone}</span>
+                        </div>
+                      </div>
+                      <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded-lg border border-amber-500/20 shrink-0">
+                        {m.sharesCount} phần
+                      </span>
                     </div>
+
+                    {/* Bank Info Box (Privacy Enforced) */}
+                    <div className="p-2.5 bg-slate-900 rounded-xl border border-slate-800/80 text-[11px] space-y-1">
+                      {canSeeBank ? (
+                        m.bankConfig ? (
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-slate-400 block text-[10px]">TK Ngân hàng (Đã duyệt):</span>
+                              <span className="font-mono font-bold text-emerald-400 block">
+                                {m.bankConfig.bankCode} - {m.bankConfig.accountNumber}
+                              </span>
+                              <span className="text-[10px] text-slate-300 uppercase block font-semibold">
+                                {m.bankConfig.accountName}
+                              </span>
+                            </div>
+                            {isHost && onOpenRegisterBankModal && (
+                              <button
+                                onClick={() => onOpenRegisterBankModal(m)}
+                                className="text-[10px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 font-bold px-2 py-1 rounded-lg border border-amber-500/30 transition-all shrink-0"
+                              >
+                                Sửa TK
+                              </button>
+                            )}
+                          </div>
+                        ) : m.pendingBankConfig ? (
+                          <div className="flex items-center justify-between">
+                            <div>
+                              <span className="text-amber-400 font-bold block text-[10px]">⏳ Chờ Chủ Hụi duyệt TK:</span>
+                              <span className="font-mono text-amber-300 block">
+                                {m.pendingBankConfig.bankCode} - {m.pendingBankConfig.accountNumber}
+                              </span>
+                            </div>
+                            {isHost && onApproveMemberBank && (
+                              <button
+                                onClick={() => onApproveMemberBank(m.id)}
+                                className="text-[10px] bg-emerald-500 text-slate-950 font-extrabold px-2 py-1 rounded-lg shadow transition-all shrink-0"
+                              >
+                                Duyệt
+                              </button>
+                            )}
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-between">
+                            <span className="text-slate-500 italic">Chưa đăng ký TK nhận tiền</span>
+                            {canSeeBank && onOpenRegisterBankModal && (
+                              <button
+                                onClick={() => onOpenRegisterBankModal(m)}
+                                className="text-[10px] bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 font-bold px-2 py-0.5 rounded-lg border border-emerald-500/30 transition-all shrink-0"
+                              >
+                                + Đăng ký
+                              </button>
+                            )}
+                          </div>
+                        )
+                      ) : (
+                        <div className="flex items-center space-x-1.5 text-slate-500 text-[10px]">
+                          <Lock className="h-3 w-3 text-slate-500" />
+                          <span>TK Ngân Hàng: Bảo mật (Chỉ Chủ Hụi thấy)</span>
+                        </div>
+                      )}
+                    </div>
+
                   </div>
-                  <span className="text-xs font-mono font-bold text-amber-400 bg-amber-500/10 px-2 py-0.5 rounded border border-amber-500/20">
-                    {m.sharesCount} phần
-                  </span>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
 

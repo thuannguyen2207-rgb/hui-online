@@ -218,12 +218,13 @@ export function generateVietQRUrl(
   accountNumber: string,
   accountName: string,
   amount: number,
-  addInfo: string
+  addInfo: string,
+  template: string = 'compact2'
 ): string {
   const cleanBank = bankCode.trim().toUpperCase() || 'MB';
   const cleanAcc = accountNumber.trim() || '0000000000';
   const cleanName = encodeURIComponent(accountName.trim());
   const cleanInfo = encodeURIComponent(addInfo.trim());
 
-  return `https://img.vietqr.io/image/${cleanBank}-${cleanAcc}-compact2.png?amount=${amount}&addInfo=${cleanInfo}&accountName=${cleanName}`;
+  return `https://img.vietqr.io/image/${cleanBank}-${cleanAcc}-${template}.png?amount=${amount}&addInfo=${cleanInfo}&accountName=${cleanName}`;
 }

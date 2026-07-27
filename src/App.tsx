@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Bid, ChatMessage, HuiDay, HuiMember, HuiRound, Transaction, User, UserRole } from './types';
+import { Bid, BankConfig, ChatMessage, HuiDay, HuiMember, HuiRound, Transaction, User, UserRole } from './types';
 import { MOCK_BIDS, MOCK_CHAT_MESSAGES, MOCK_HUI_DAYS, MOCK_MEMBERS, MOCK_ROUNDS, MOCK_TRANSACTIONS, MOCK_USERS } from './data/mockData';
 import { calculateMemberStates, calculateRoundPayout, formatVND, generateVietQRUrl, getCycleTypeLabel } from './utils/huiFinancialEngine';
 import { supabase } from './lib/supabase';
@@ -7,6 +7,8 @@ import { Navbar } from './components/Navbar';
 import { LoginScreen } from './components/LoginScreen';
 import { PhoneAuthModal } from './components/PhoneAuthModal';
 import { CreateHuiModal } from './components/CreateHuiModal';
+import { BankConfigModal } from './components/BankConfigModal';
+import { MemberRegisterBankModal } from './components/MemberRegisterBankModal';
 import { VietQRModal } from './components/VietQRModal';
 import { ExploreHuiModal } from './components/ExploreHuiModal';
 import { HuiDetailView } from './components/HuiDetailView';
@@ -84,7 +86,140 @@ export function App() {
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isExploreModalOpen, setIsExploreModalOpen] = useState(false);
+  const [isBankConfigModalOpen, setIsBankConfigModalOpen] = useState(false);
+  const [isRegisterBankModalOpen, setIsRegisterBankModalOpen] = useState(false);
+  const [targetBankMember, setTargetBankMember] = useState<HuiMember | undefined>(undefined);
   const [activeVietQRTx, setActiveVietQRTx] = useState<Transaction | null>(null);
+
+  const handleOpenRegisterBankModal = (member?: HuiMember) => {
+    setTargetBankMember(member);
+    setIsRegisterBankModalOpen(true);
+  };
+
+  // Save/Register Member Bank Account
+  const handleRegisterMemberBank = (
+    targetId: string,
+    newConfig: BankConfig,
+    isHostAction: boolean = false
+  ) => {
+    setMembers(prev => prev.map(m => {
+      if (m.id === targetId || m.userId === targetId) {
+        if (isHostAction) {
+          return {
+            ...m,
+            bankConfig: newConfig,
+            pendingBankConfig: undefined,
+            bankApprovalStatus: 'approved' as const,
+          };
+        } else {
+          return {
+            ...m,
+            pendingBankConfig: newConfig,
+            bankApprovalStatus: 'pending' as const,
+          };
+        }
+      }
+      return m;
+    }));
+
+    // Update currentUser state if user registered their own
+    if (currentUser && (currentUser.id === targetId || !isHostAction)) {
+      setCurrentUser(prev => prev ? {
+        ...prev,
+        bankCode: newConfig.bankCode,
+        bankName: newConfig.bankName,
+        accountNumber: newConfig.accountNumber,
+        accountName: newConfig.accountName,
+        bankConfig: isHostAction ? newConfig : prev.bankConfig,
+        pendingBankConfig: isHostAction ? undefined : newConfig,
+        bankApprovalStatus: isHostAction ? 'approved' : 'pending',
+      } : null);
+    }
+
+    // Add automated system notice to group chat
+    const targetMember = members.find(m => m.id === targetId || m.userId === targetId);
+    const memberName = targetMember?.userName || currentUser?.name || 'Hội viên';
+    const noticeMsg = isHostAction
+      ? `Chủ Hụi đã cập nhật/phê duyệt tài khoản ngân hàng nhận tiền cho hội viên ${memberName} (${newConfig.bankCode} - ${newConfig.accountNumber}).`
+      : `Hội viên ${memberName} đã gửi đăng ký/thay đổi tài khoản ngân hàng nhận tiền (${newConfig.bankCode}). Đang chờ Chủ Hụi phê duyệt.`;
+
+    const chatMsg: ChatMessage = {
+      id: `msg_bank_${Date.now()}`,
+      huiDayId: selectedHuiDayId,
+      senderId: 'sys',
+      senderName: 'Hệ Thống Sổ Hụi',
+      senderRole: 'system',
+      message: noticeMsg,
+      timestamp: new Date().toISOString(),
+      type: 'system_alert',
+    };
+    setChatMessages(prev => [...prev, chatMsg]);
+  };
+
+  // Host approves member bank account
+  const handleApproveMemberBank = (memberId: string) => {
+    let approvedMemberName = '';
+    setMembers(prev => prev.map(m => {
+      if (m.id === memberId && m.pendingBankConfig) {
+        approvedMemberName = m.userName;
+        return {
+          ...m,
+          bankConfig: m.pendingBankConfig,
+          pendingBankConfig: undefined,
+          bankApprovalStatus: 'approved',
+        };
+      }
+      return m;
+    }));
+
+    const chatMsg: ChatMessage = {
+      id: `msg_approve_bank_${Date.now()}`,
+      huiDayId: selectedHuiDayId,
+      senderId: 'sys',
+      senderName: 'Hệ Thống Sổ Hụi',
+      senderRole: 'system',
+      message: `Chủ Hụi đã phê duyệt thành công tài khoản ngân hàng nhận tiền hốt hụi cho hội viên ${approvedMemberName || 'hội viên'}.`,
+      timestamp: new Date().toISOString(),
+      type: 'system_alert',
+    };
+    setChatMessages(prev => [...prev, chatMsg]);
+  };
+
+  // Host rejects member bank account
+  const handleRejectMemberBank = (memberId: string) => {
+    setMembers(prev => prev.map(m => {
+      if (m.id === memberId) {
+        return {
+          ...m,
+          pendingBankConfig: undefined,
+          bankApprovalStatus: 'rejected',
+        };
+      }
+      return m;
+    }));
+  };
+
+  // Save Bank Account Config for Host
+  const handleSaveBankConfig = (newBankConfig: BankConfig) => {
+    // Update currentUser profile
+    setCurrentUser(prev => prev ? {
+      ...prev,
+      bankName: newBankConfig.bankName,
+      accountNumber: newBankConfig.accountNumber,
+      accountName: newBankConfig.accountName,
+    } : null);
+
+    // Update bankConfig in huiDays state for active day or days hosted by this user
+    setHuiDays(prev => prev.map(day => {
+      if (day.id === selectedHuiDayId || day.hostId === currentUser?.id) {
+        return {
+          ...day,
+          bankConfig: newBankConfig,
+        };
+      }
+      return day;
+    }));
+  };
 
   // Ref for Carousel Scroll
   const huiCarouselRef = useRef<HTMLDivElement>(null);
@@ -431,6 +566,7 @@ export function App() {
         onToggleMobileFrame={() => setIsMobileFrame(!isMobileFrame)}
         onOpenCreateModal={() => setIsCreateModalOpen(true)}
         onOpenExploreModal={() => setIsExploreModalOpen(true)}
+        onOpenBankConfigModal={() => setIsBankConfigModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onLogout={async () => {
           await supabase.auth.signOut();
@@ -600,6 +736,8 @@ export function App() {
                 onSubmitBid={handleSubmitBid}
                 onSendMessage={handleSendMessage}
                 onOpenExploreModal={() => setIsExploreModalOpen(true)}
+                onOpenBankConfigModal={() => setIsBankConfigModalOpen(true)}
+                onOpenRegisterBankModal={handleOpenRegisterBankModal}
               />
             ) : (
               <HuiDetailView
@@ -617,6 +755,10 @@ export function App() {
                 onSendMessage={handleSendMessage}
                 onApproveMember={handleApproveMember}
                 onRejectMember={handleRejectMember}
+                onOpenBankConfigModal={() => setIsBankConfigModalOpen(true)}
+                onOpenRegisterBankModal={handleOpenRegisterBankModal}
+                onApproveMemberBank={handleApproveMemberBank}
+                onRejectMemberBank={handleRejectMemberBank}
               />
             )}
 
@@ -653,6 +795,24 @@ export function App() {
         currentUser={currentUser}
         onCreateHuiDay={handleCreateHuiDay}
       />
+
+      <BankConfigModal
+        isOpen={isBankConfigModalOpen}
+        onClose={() => setIsBankConfigModalOpen(false)}
+        currentUser={currentUser}
+        currentBankConfig={activeHuiDay?.bankConfig}
+        onSaveBankConfig={handleSaveBankConfig}
+      />
+
+      {currentUser && (
+        <MemberRegisterBankModal
+          isOpen={isRegisterBankModalOpen}
+          onClose={() => setIsRegisterBankModalOpen(false)}
+          currentUser={currentUser}
+          targetMember={targetBankMember}
+          onRegisterBank={handleRegisterMemberBank}
+        />
+      )}
 
       <VietQRModal
         isOpen={!!activeVietQRTx}
