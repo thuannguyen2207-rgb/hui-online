@@ -9,6 +9,7 @@ import { PhoneAuthModal } from './components/PhoneAuthModal';
 import { CreateHuiModal } from './components/CreateHuiModal';
 import { BankConfigModal } from './components/BankConfigModal';
 import { MemberRegisterBankModal } from './components/MemberRegisterBankModal';
+import { UserSettingsModal } from './components/UserSettingsModal';
 import { VietQRModal } from './components/VietQRModal';
 import { ExploreHuiModal } from './components/ExploreHuiModal';
 import { HuiDetailView } from './components/HuiDetailView';
@@ -88,8 +89,33 @@ export function App() {
   const [isExploreModalOpen, setIsExploreModalOpen] = useState(false);
   const [isBankConfigModalOpen, setIsBankConfigModalOpen] = useState(false);
   const [isRegisterBankModalOpen, setIsRegisterBankModalOpen] = useState(false);
+  const [isUserSettingsModalOpen, setIsUserSettingsModalOpen] = useState(false);
   const [targetBankMember, setTargetBankMember] = useState<HuiMember | undefined>(undefined);
   const [activeVietQRTx, setActiveVietQRTx] = useState<Transaction | null>(null);
+
+  // Update current user profile settings
+  const handleUpdateUser = (updatedFields: Partial<User>) => {
+    setCurrentUser(prev => prev ? {
+      ...prev,
+      ...updatedFields,
+    } : null);
+
+    // Sync member profile records if user updated name, phone, avatar or bank
+    if (currentUser) {
+      setMembers(prev => prev.map(m => {
+        if (m.userId === currentUser.id) {
+          return {
+            ...m,
+            userName: updatedFields.name || m.userName,
+            userPhone: updatedFields.phone || m.userPhone,
+            userAvatar: updatedFields.avatar || m.userAvatar,
+            bankConfig: updatedFields.bankConfig || m.bankConfig,
+          };
+        }
+        return m;
+      }));
+    }
+  };
 
   const handleOpenRegisterBankModal = (member?: HuiMember) => {
     setTargetBankMember(member);
@@ -567,6 +593,7 @@ export function App() {
         onOpenCreateModal={() => setIsCreateModalOpen(true)}
         onOpenExploreModal={() => setIsExploreModalOpen(true)}
         onOpenBankConfigModal={() => setIsBankConfigModalOpen(true)}
+        onOpenUserSettingsModal={() => setIsUserSettingsModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onLogout={async () => {
           await supabase.auth.signOut();
@@ -805,13 +832,22 @@ export function App() {
       />
 
       {currentUser && (
-        <MemberRegisterBankModal
-          isOpen={isRegisterBankModalOpen}
-          onClose={() => setIsRegisterBankModalOpen(false)}
-          currentUser={currentUser}
-          targetMember={targetBankMember}
-          onRegisterBank={handleRegisterMemberBank}
-        />
+        <>
+          <MemberRegisterBankModal
+            isOpen={isRegisterBankModalOpen}
+            onClose={() => setIsRegisterBankModalOpen(false)}
+            currentUser={currentUser}
+            targetMember={targetBankMember}
+            onRegisterBank={handleRegisterMemberBank}
+          />
+
+          <UserSettingsModal
+            isOpen={isUserSettingsModalOpen}
+            onClose={() => setIsUserSettingsModalOpen(false)}
+            currentUser={currentUser}
+            onUpdateUser={handleUpdateUser}
+          />
+        </>
       )}
 
       <VietQRModal

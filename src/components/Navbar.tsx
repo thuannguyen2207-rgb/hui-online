@@ -12,7 +12,8 @@ import {
   LogOut, 
   HelpCircle,
   Coins,
-  QrCode
+  QrCode,
+  Settings
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -25,6 +26,7 @@ interface NavbarProps {
   onOpenCreateModal: () => void;
   onOpenExploreModal?: () => void;
   onOpenBankConfigModal?: () => void;
+  onOpenUserSettingsModal?: () => void;
   onOpenAuthModal: () => void;
   onLogout?: () => void;
 }
@@ -39,6 +41,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenCreateModal,
   onOpenExploreModal,
   onOpenBankConfigModal,
+  onOpenUserSettingsModal,
   onOpenAuthModal,
   onLogout,
 }) => {
@@ -170,24 +173,27 @@ export const Navbar: React.FC<NavbarProps> = ({
               {isMobileFrame ? <Monitor className="h-4 w-4" /> : <Smartphone className="h-4 w-4 text-amber-400" />}
             </button>
 
-            {/* User Profile / Auth Button */}
+            {/* User Profile Settings Button */}
             <button
-              onClick={onOpenAuthModal}
-              className="flex items-center space-x-2 p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition-all text-left"
-              title="Đổi tài khoản hoặc sửa thông tin"
+              onClick={onOpenUserSettingsModal || onOpenAuthModal}
+              className="flex items-center space-x-2 p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition-all text-left group"
+              title="Cài đặt hồ sơ & tài khoản cá nhân"
             >
               <img
                 src={currentUser.avatar}
                 alt={currentUser.name}
-                className="h-7 w-7 rounded-lg object-cover ring-2 ring-amber-500/50"
+                className="h-7 w-7 rounded-lg object-cover ring-2 ring-amber-500/50 group-hover:ring-amber-400"
               />
               <div className="hidden lg:block text-xs">
-                <div className="font-semibold text-white truncate max-w-[100px]">{currentUser.name}</div>
+                <div className="font-semibold text-white truncate max-w-[100px] flex items-center space-x-1">
+                  <span>{currentUser.name}</span>
+                </div>
                 <div className="text-[10px] text-emerald-400 flex items-center">
                   <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse"></span>
                   {currentUser.phone}
                 </div>
               </div>
+              <Settings className="h-4 w-4 text-slate-400 group-hover:text-amber-400 transition-colors hidden sm:block ml-0.5" />
             </button>
 
             {/* Logout Button */}
