@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { User, UserRole } from '../types';
 import { MOCK_USERS } from '../data/mockData';
+import { supabase } from '../lib/supabase';
 import { 
   Phone, 
+  Mail,
   ShieldCheck, 
   UserCheck, 
   CheckCircle2, 
@@ -17,7 +19,10 @@ import {
   Eye,
   EyeOff,
   UserPlus,
-  LogIn
+  LogIn,
+  AtSign,
+  RefreshCw,
+  Send
 } from 'lucide-react';
 
 interface LoginScreenProps {
@@ -25,30 +30,131 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
-  const [authMode, setAuthMode] = useState<'login' | 'register' | 'demo'>('login');
+  const [authMode, setAuthMode] = useState<'email_otp' | 'phone_pass' | 'register' | 'demo'>('email_otp');
   
-  // Login Form state
-  const [phone, setPhone] = useState('0908123456');
+  // Supabase Email OTP state
+  const [emailForOtp, setEmailForOtp] = useState('thuan.nguyen2207@gmail.com');
+  const [otpToken, setOtpToken] = useState('');
+  const [isEmailOtpSent, setIsEmailOtpSent] = useState(false);
+
+  // Login Form state (Phone or Email + Password)
+  const [accountIdentifier, setAccountIdentifier] = useState('0908123456');
   const [password, setPassword] = useState('123456');
   const [showPassword, setShowPassword] = useState(false);
 
   // Register Form state
   const [regPhone, setRegPhone] = useState('');
+  const [regEmail, setRegEmail] = useState('');
   const [regName, setRegName] = useState('');
   const [regRole, setRegRole] = useState<UserRole>('hui_vien');
-  const [otpCode, setOtpCode] = useState('');
-  const [isOtpSent, setIsOtpSent] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [successMsg, setSuccessMsg] = useState('');
 
-  // Handle Standard Login Submit
+  // 1. SUPABASE STEP 1: SEND EMAIL OTP
+  const handleSendEmailOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    const email = emailForOtp.trim().toLowerCase();
+    if (!email || !email.includes('@')) {
+      setErrorMsg('Vui lòng nhập địa chỉ Email hợp lệ (ví dụ: name@gmail.com)');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          shouldCreateUser: true,
+        },
+      });
+
+      if (error) {
+        console.error('Supabase signInWithOtp error:', error);
+        setErrorMsg(`Lỗi kết nối Supabase: ${error.message}`);
+      } else {
+        setIsEmailOtpSent(true);
+        setSuccessMsg(`Đã gửi mã xác thực OTP 6 số tới ${email}. Vui lòng kiểm tra Email (bao gồm thư mục Spam).`);
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Không thể gửi mã OTP tới Supabase');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 2. SUPABASE STEP 2: VERIFY EMAIL OTP
+  const handleVerifyEmailOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    const email = emailForOtp.trim().toLowerCase();
+    const token = otpToken.trim();
+
+    if (!token || token.length < 6) {
+      setErrorMsg('Vui lòng nhập đủ 6 chữ số mã OTP');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const { data, error } = await supabase.auth.verifyOtp({
+        email,
+        token,
+        type: 'email'
+      });
+
+      if (error) {
+        console.error('Supabase verifyOtp error:', error);
+        setErrorMsg(`Xác minh mã OTP thất bại: ${error.message}. Vui lòng kiểm tra lại mã.`);
+      } else if (data?.session || data?.user) {
+        const spUser = data.user;
+        const verifiedEmail = spUser?.email || email;
+
+        // Find or create matching user profile for Hui app
+        const matchedUser: User = MOCK_USERS.find(
+          u => u.email?.toLowerCase() === verifiedEmail.toLowerCase()
+        ) || {
+          id: spUser?.id || `sp_${Date.now()}`,
+          phone: spUser?.phone || '0908123456',
+          email: verifiedEmail,
+          name: verifiedEmail.split('@')[0] || 'Hội Viên Supabase',
+          role: verifiedEmail.includes('chuhui') ? 'chu_hui' : 'hui_vien',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          verified: true,
+          bankName: 'MB Bank',
+          accountNumber: '0908123456888',
+          accountName: verifiedEmail.split('@')[0].toUpperCase()
+        };
+
+        setSuccessMsg('Xác minh Supabase OTP thành công! Đang chuyển vào hệ thống...');
+        setTimeout(() => {
+          onLoginSuccess(matchedUser);
+        }, 400);
+      } else {
+        setErrorMsg('Mã OTP hợp lệ nhưng chưa khởi tạo được phiên làm việc.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Có lỗi khi kết nối xác thực Supabase');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Standard Login Submit (Password fallback)
   const handleLoginSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
+    setSuccessMsg('');
     
-    if (!phone || phone.trim().length < 8) {
-      setErrorMsg('Vui lòng nhập số điện thoại hợp lệ');
+    const query = accountIdentifier.trim().toLowerCase();
+    if (!query || query.length < 3) {
+      setErrorMsg('Vui lòng nhập Số điện thoại hoặc Email hợp lệ');
       return;
     }
 
@@ -57,12 +163,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     setTimeout(() => {
       setLoading(false);
 
-      // Check if matches host mock or member mock
-      const matchedUser = MOCK_USERS.find(u => u.phone === phone.trim()) || {
+      const matchedUser = MOCK_USERS.find(
+        u => u.phone === query || (u.email && u.email.toLowerCase() === query)
+      ) || {
         id: `u_${Date.now()}`,
-        phone: phone.trim(),
-        name: phone.startsWith('090') ? 'Trần Thị Thu (Chủ Hụi)' : 'Nguyễn Văn An (Hội Viên)',
-        role: phone.startsWith('090') ? 'chu_hui' : 'hui_vien',
+        phone: query.includes('@') ? '0901112233' : query,
+        email: query.includes('@') ? query : `${query}@gmail.com`,
+        name: query.includes('chuhui') || query.startsWith('090') ? 'Trần Thị Thu (Chủ Hụi)' : 'Nguyễn Văn An (Hội Viên)',
+        role: query.includes('chuhui') || query.startsWith('090') ? 'chu_hui' : 'hui_vien',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
         verified: true,
         bankName: 'MB Bank',
@@ -71,42 +179,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       };
 
       onLoginSuccess(matchedUser);
-    }, 600);
-  };
-
-  // Handle Register Submit
-  const handleRegisterSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!regPhone || !regName) return;
-
-    if (!isOtpSent) {
-      setLoading(true);
-      setTimeout(() => {
-        setLoading(false);
-        setIsOtpSent(true);
-        setOtpCode('668899');
-      }, 500);
-      return;
-    }
-
-    // Verify OTP & Complete Register
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      const newUser: User = {
-        id: `u_${Date.now()}`,
-        phone: regPhone,
-        name: regName,
-        role: 'hui_vien',
-        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
-        verified: true,
-        bankName: regRole === 'chu_hui' ? 'MB Bank' : undefined,
-        accountNumber: regRole === 'chu_hui' ? '0908123456888' : undefined,
-        accountName: regRole === 'chu_hui' ? regName.toUpperCase() : undefined,
-      };
-
-      onLoginSuccess(newUser);
-    }, 600);
+    }, 500);
   };
 
   // Quick Demo Login
@@ -116,6 +189,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       onLoginSuccess(user);
     }, 300);
   };
+
+  const isEmailFormat = accountIdentifier.includes('@');
 
   return (
     <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-center items-center p-4 relative overflow-hidden">
@@ -134,8 +209,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           <h1 className="text-3xl font-extrabold text-white tracking-tight">
             SỔ HỤI TRỰC TUYẾN
           </h1>
-          <p className="text-xs text-amber-400 font-semibold tracking-wide uppercase">
-            Hệ Thống Quản Lý & Chơi Hụi Minh Bạch
+          <p className="text-xs text-amber-400 font-semibold tracking-wide uppercase flex items-center justify-center space-x-1">
+            <ShieldCheck className="h-3.5 w-3.5 text-emerald-400 inline" />
+            <span>Xác Thực Supabase Cloud Auth</span>
           </p>
         </div>
 
@@ -151,7 +227,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           </div>
           <div className="flex flex-col items-center space-y-1">
             <Lock className="h-4 w-4 text-blue-400" />
-            <span>Bảo Mật Thăm</span>
+            <span>Xác Thực Supabase</span>
           </div>
         </div>
 
@@ -159,79 +235,210 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-5">
           
           {/* Main Auth Navigation Tabs */}
-          <div className="grid grid-cols-3 gap-1.5 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 text-xs font-bold">
+          <div className="grid grid-cols-3 gap-1 bg-slate-950 p-1 rounded-2xl border border-slate-800 text-xs font-bold">
             <button
-              onClick={() => { setAuthMode('login'); setErrorMsg(''); }}
-              className={`py-2 rounded-xl transition-all flex items-center justify-center space-x-1 ${
-                authMode === 'login'
+              type="button"
+              onClick={() => { setAuthMode('email_otp'); setErrorMsg(''); setSuccessMsg(''); }}
+              className={`py-2 px-1 rounded-xl transition-all flex items-center justify-center space-x-1 ${
+                authMode === 'email_otp'
                   ? 'bg-amber-500 text-slate-950 shadow-md'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <LogIn className="h-3.5 w-3.5" />
-              <span>Đăng Nhập</span>
+              <Mail className="h-3.5 w-3.5 shrink-0" />
+              <span>Email OTP</span>
             </button>
 
             <button
-              onClick={() => { setAuthMode('register'); setErrorMsg(''); }}
-              className={`py-2 rounded-xl transition-all flex items-center justify-center space-x-1 ${
-                authMode === 'register'
+              type="button"
+              onClick={() => { setAuthMode('phone_pass'); setErrorMsg(''); setSuccessMsg(''); }}
+              className={`py-2 px-1 rounded-xl transition-all flex items-center justify-center space-x-1 ${
+                authMode === 'phone_pass'
                   ? 'bg-amber-500 text-slate-950 shadow-md'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <UserPlus className="h-3.5 w-3.5" />
-              <span>Đăng Ký</span>
+              <LogIn className="h-3.5 w-3.5 shrink-0" />
+              <span>Mật Khẩu</span>
             </button>
 
             <button
-              onClick={() => { setAuthMode('demo'); setErrorMsg(''); }}
-              className={`py-2 rounded-xl transition-all flex items-center justify-center space-x-1 ${
+              type="button"
+              onClick={() => { setAuthMode('demo'); setErrorMsg(''); setSuccessMsg(''); }}
+              className={`py-2 px-1 rounded-xl transition-all flex items-center justify-center space-x-1 ${
                 authMode === 'demo'
                   ? 'bg-amber-500 text-slate-950 shadow-md'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <Zap className="h-3.5 w-3.5" />
+              <Zap className="h-3.5 w-3.5 shrink-0" />
               <span>Demo</span>
             </button>
           </div>
 
-          {/* TAB 1: FORM ĐĂNG NHẬP CHÍNH CHUẨN */}
-          {authMode === 'login' && (
-            <form onSubmit={handleLoginSubmit} className="space-y-4">
+          {/* Feedback Messages */}
+          {errorMsg && (
+            <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-300 text-xs rounded-xl font-medium text-center space-y-1 animate-fade-in">
+              <p>{errorMsg}</p>
+            </div>
+          )}
+
+          {successMsg && (
+            <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 text-emerald-300 text-xs rounded-xl font-medium text-center animate-fade-in">
+              <p>{successMsg}</p>
+            </div>
+          )}
+
+          {/* MODE 1: SUPABASE EMAIL OTP (CHÍNH THỨC) */}
+          {authMode === 'email_otp' && (
+            <div className="space-y-4">
               <div className="text-center space-y-1 pb-1">
-                <h2 className="text-base font-bold text-white">Đăng Nhập Tài Khoản</h2>
+                <div className="inline-flex items-center space-x-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-[11px] font-semibold mb-1">
+                  <ShieldCheck className="h-3 w-3" />
+                  <span>Xác thực chính thức qua Supabase</span>
+                </div>
+                <h2 className="text-base font-bold text-white">Đăng Nhập Xử Lý Mã OTP Email</h2>
                 <p className="text-xs text-slate-400">
-                  Nhập số điện thoại đăng ký sổ hụi để vào hệ thống
+                  Hệ thống gửi mã OTP 6 số bảo mật trực tiếp về hộp thư Email của bạn
                 </p>
               </div>
 
-              {errorMsg && (
-                <div className="p-3 bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs rounded-xl font-medium text-center">
-                  {errorMsg}
-                </div>
-              )}
+              {!isEmailOtpSent ? (
+                /* STEP 1: ENTER EMAIL & CLICK SEND OTP */
+                <form onSubmit={handleSendEmailOtp} className="space-y-4">
+                  <div>
+                    <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                      <span>Địa Chỉ Email Của Bạn</span>
+                      <span className="text-[10px] text-emerald-400 font-medium">Supabase Auth</span>
+                    </label>
+                    <div className="relative">
+                      <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-400" />
+                      <input
+                        type="email"
+                        value={emailForOtp}
+                        onChange={(e) => setEmailForOtp(e.target.value)}
+                        placeholder="nhap.email@gmail.com"
+                        required
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-amber-500"
+                      />
+                    </div>
+                  </div>
 
-              {/* Phone Input */}
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold py-3 px-4 rounded-xl shadow-xl shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all text-sm active:scale-98"
+                  >
+                    {loading ? (
+                      <span className="flex items-center space-x-2">
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        <span>Đang gửi mã qua Supabase...</span>
+                      </span>
+                    ) : (
+                      <>
+                        <span>GỬI MÃ OTP QUA EMAIL</span>
+                        <Send className="h-4 w-4" />
+                      </>
+                    )}
+                  </button>
+                </form>
+              ) : (
+                /* STEP 2: ENTER 6-DIGIT OTP & VERIFY */
+                <form onSubmit={handleVerifyEmailOtp} className="space-y-4 animate-fade-in">
+                  <div className="p-3 bg-slate-950 border border-amber-500/40 rounded-2xl space-y-2 text-center">
+                    <div className="text-xs text-slate-300">
+                      Đã gửi mã xác thực đến: <strong className="text-amber-400 font-mono">{emailForOtp}</strong>
+                    </div>
+
+                    <div>
+                      <label className="block text-xs font-bold text-amber-300 mb-1">
+                        Nhập Mã OTP 6 Chữ Số:
+                      </label>
+                      <input
+                        type="text"
+                        maxLength={6}
+                        value={otpToken}
+                        onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, ''))}
+                        placeholder="123456"
+                        autoFocus
+                        required
+                        className="w-full bg-slate-900 border-2 border-amber-500 rounded-xl py-2.5 text-center text-2xl font-mono tracking-[0.4em] text-amber-400 focus:outline-none shadow-inner"
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={loading || otpToken.length < 6}
+                    className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-extrabold py-3 px-4 rounded-xl shadow-xl shadow-emerald-500/20 flex items-center justify-center space-x-2 transition-all text-sm disabled:opacity-50"
+                  >
+                    {loading ? (
+                      <span className="flex items-center space-x-2">
+                        <RefreshCw className="h-4 w-4 animate-spin" />
+                        <span>Đang xác minh OTP...</span>
+                      </span>
+                    ) : (
+                      <>
+                        <span>XÁC MINH MÃ OTP & ĐĂNG NHẬP</span>
+                        <CheckCircle2 className="h-4 w-4" />
+                      </>
+                    )}
+                  </button>
+
+                  <div className="flex justify-between items-center text-xs text-slate-400 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => { setIsEmailOtpSent(false); setOtpToken(''); setErrorMsg(''); }}
+                      className="hover:text-amber-400 underline"
+                    >
+                      ← Đổi địa chỉ Email
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleSendEmailOtp}
+                      disabled={loading}
+                      className="hover:text-emerald-400 underline"
+                    >
+                      Gửi lại mã OTP
+                    </button>
+                  </div>
+                </form>
+              )}
+            </div>
+          )}
+
+          {/* MODE 2: FORM ĐĂNG NHẬP MẬT KHẨU */}
+          {authMode === 'phone_pass' && (
+            <form onSubmit={handleLoginSubmit} className="space-y-4">
+              <div className="text-center space-y-1 pb-1">
+                <h2 className="text-base font-bold text-white">Đăng Nhập Bằng Mật Khẩu</h2>
+                <p className="text-xs text-slate-400">
+                  Nhập Số Điện Thoại hoặc Email cùng Mật Khẩu
+                </p>
+              </div>
+
               <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Số Điện Thoại
+                <label className="block text-xs font-semibold text-slate-300 mb-1 flex items-center justify-between">
+                  <span>Số Điện Thoại hoặc Email</span>
+                  <span className="text-[10px] text-amber-400/80 font-normal">SĐT / Email</span>
                 </label>
                 <div className="relative">
-                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                  {isEmailFormat ? (
+                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-400" />
+                  ) : (
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                  )}
                   <input
-                    type="tel"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    placeholder="0908123456"
+                    type="text"
+                    value={accountIdentifier}
+                    onChange={(e) => setAccountIdentifier(e.target.value)}
+                    placeholder="VD: 0908123456 hoặc chuhui@sohui.vn"
                     required
                     className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-amber-500"
                   />
                 </div>
               </div>
 
-              {/* Password Input */}
               <div>
                 <label className="block text-xs font-semibold text-slate-300 mb-1">
                   Mật Khẩu
@@ -256,19 +463,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                 </div>
               </div>
 
-              {/* Quick Preset Hint */}
-              <div className="p-3 bg-slate-950 rounded-xl border border-slate-800/80 text-[11px] text-slate-400 space-y-1">
-                <div className="flex justify-between items-center text-slate-300">
-                  <span>Tài khoản thử gợi ý:</span>
-                  <span className="text-amber-400 font-mono font-bold">Mật khẩu: 123456</span>
-                </div>
-                <div className="flex justify-between text-[10px]">
-                  <span>• Chủ Hụi: <strong className="text-emerald-400 font-mono">0908123456</strong></span>
-                  <span>• Hội Viên: <strong className="text-blue-400 font-mono">0909888999</strong></span>
-                </div>
-              </div>
-
-              {/* Submit Login Button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -283,121 +477,16 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                   </>
                 )}
               </button>
-
-              {/* Quick switch to register */}
-              <div className="text-center pt-1">
-                <button
-                  type="button"
-                  onClick={() => setAuthMode('register')}
-                  className="text-xs text-amber-400 hover:underline font-semibold"
-                >
-                  Chưa có tài khoản? Đăng ký tham gia ngay
-                </button>
-              </div>
-
             </form>
           )}
 
-          {/* TAB 2: FORM ĐĂNG KÝ TÀI KHOẢN MỚI */}
-          {authMode === 'register' && (
-            <form onSubmit={handleRegisterSubmit} className="space-y-4">
-              <div className="text-center space-y-1 pb-1">
-                <h2 className="text-base font-bold text-white">Đăng Ký Tài Khoản Hội Viên</h2>
-                <p className="text-xs text-slate-400">
-                  Tạo tài khoản Hội Viên tham gia các dây hụi bằng SĐT xác thực
-                </p>
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Số Điện Thoại Đăng Ký
-                </label>
-                <input
-                  type="tel"
-                  value={regPhone}
-                  onChange={(e) => setRegPhone(e.target.value)}
-                  placeholder="0912345678"
-                  required
-                  disabled={isOtpSent}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              <div>
-                <label className="block text-xs font-semibold text-slate-300 mb-1">
-                  Họ & Tên
-                </label>
-                <input
-                  type="text"
-                  value={regName}
-                  onChange={(e) => setRegName(e.target.value)}
-                  placeholder="Nguyễn Văn An"
-                  required
-                  disabled={isOtpSent}
-                  className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-white text-sm focus:outline-none focus:border-amber-500"
-                />
-              </div>
-
-              {!isOtpSent && (
-                <div className="p-3 bg-slate-950 border border-blue-500/30 rounded-xl flex items-center space-x-3 text-xs">
-                  <div className="p-2 bg-blue-500/20 text-blue-400 rounded-lg shrink-0">
-                    <UserCheck className="h-4 w-4" />
-                  </div>
-                  <div>
-                    <span className="font-bold text-white block">Tài Khoản: Hội Viên (Member)</span>
-                    <span className="text-[11px] text-slate-400">Đăng ký tham gia dây hụi, nộp thăm bí mật & thanh toán VietQR</span>
-                  </div>
-                </div>
-              )}
-
-              {isOtpSent && (
-                <div className="space-y-2 p-3 bg-slate-950 border border-amber-500/50 rounded-xl">
-                  <label className="block text-xs font-semibold text-amber-300 text-center">
-                    Nhập Mã OTP Xác Thực (6 Chữ Số)
-                  </label>
-                  <input
-                    type="text"
-                    maxLength={6}
-                    value={otpCode}
-                    onChange={(e) => setOtpCode(e.target.value)}
-                    placeholder="668899"
-                    className="w-full bg-slate-900 border border-amber-500 rounded-xl py-2 text-center text-xl font-mono text-amber-400 tracking-widest focus:outline-none"
-                  />
-                  <span className="text-[10px] text-slate-500 block text-center">
-                    Mã thử nghiệm đã tự động điền: <strong className="text-amber-400 font-mono">668899</strong>
-                  </span>
-                </div>
-              )}
-
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3 px-4 rounded-xl shadow-lg shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all text-sm"
-              >
-                {loading ? (
-                  <span>Xử Lý...</span>
-                ) : isOtpSent ? (
-                  <>
-                    <span>Hoàn Tất Đăng Ký & Đăng Nhập</span>
-                    <CheckCircle2 className="h-4 w-4" />
-                  </>
-                ) : (
-                  <>
-                    <span>Tiếp Tục Nhận Mã OTP</span>
-                    <ArrowRight className="h-4 w-4" />
-                  </>
-                )}
-              </button>
-            </form>
-          )}
-
-          {/* TAB 3: DEMO QUICK LOGIN */}
+          {/* MODE 3: DEMO QUICK LOGIN */}
           {authMode === 'demo' && (
             <div className="space-y-3">
               <div className="text-center space-y-1">
                 <h2 className="text-base font-bold text-white">Vào Nhanh Bằng Tài Khoản Mẫu</h2>
                 <p className="text-xs text-slate-400">
-                  Thử nghiệm tức thì không cần nhập thông tin
+                  Thử nghiệm tức thì không cần đợi nhận Email OTP
                 </p>
               </div>
 
@@ -419,7 +508,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                         Chủ Hụi
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-400 font-mono">SĐT: {MOCK_USERS[0].phone}</span>
+                    <div className="text-[11px] text-slate-400 font-mono space-x-2">
+                      <span>SĐT: {MOCK_USERS[0].phone}</span>
+                      <span className="text-slate-600">•</span>
+                      <span className="text-amber-300">{MOCK_USERS[0].email}</span>
+                    </div>
                   </div>
                 </div>
                 <ArrowRight className="h-4 w-4 text-emerald-400 group-hover:translate-x-1 transition-transform shrink-0" />
@@ -443,7 +536,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                         Hội Viên
                       </span>
                     </div>
-                    <span className="text-[11px] text-slate-400 font-mono">SĐT: {MOCK_USERS[1].phone}</span>
+                    <div className="text-[11px] text-slate-400 font-mono space-x-2">
+                      <span>SĐT: {MOCK_USERS[1].phone}</span>
+                      <span className="text-slate-600">•</span>
+                      <span className="text-amber-300">{MOCK_USERS[1].email}</span>
+                    </div>
                   </div>
                 </div>
                 <ArrowRight className="h-4 w-4 text-blue-400 group-hover:translate-x-1 transition-transform shrink-0" />
@@ -455,10 +552,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
         {/* Footer Note */}
         <p className="text-center text-[11px] text-slate-500">
-          Ứng dụng minh bạch hóa dây hụi chuẩn truyền thống Việt Nam.
+          Kết nối trực tiếp Supabase Endpoint: <span className="font-mono text-slate-400">xhnpxfuwweqmweenewyx.supabase.co</span>
         </p>
 
       </div>
     </div>
   );
 };
+

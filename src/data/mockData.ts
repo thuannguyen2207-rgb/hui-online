@@ -4,6 +4,7 @@ export const MOCK_USERS: User[] = [
   {
     id: 'u_host_1',
     phone: '0908123456',
+    email: 'chuhui@sohui.vn',
     name: 'Nguyễn Văn An (Chủ Hụi)',
     role: 'chu_hui',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
@@ -15,6 +16,7 @@ export const MOCK_USERS: User[] = [
   {
     id: 'u_mem_1',
     phone: '0912345678',
+    email: 'binh.tran@gmail.com',
     name: 'Trần Thị Bình',
     role: 'hui_vien',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
@@ -23,6 +25,7 @@ export const MOCK_USERS: User[] = [
   {
     id: 'u_mem_2',
     phone: '0987654321',
+    email: 'cuong.le@gmail.com',
     name: 'Lê Văn Cường',
     role: 'hui_vien',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
@@ -31,6 +34,7 @@ export const MOCK_USERS: User[] = [
   {
     id: 'u_mem_3',
     phone: '0933445566',
+    email: 'dung.pham@gmail.com',
     name: 'Phạm Thị Dung',
     role: 'hui_vien',
     avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
@@ -39,6 +43,7 @@ export const MOCK_USERS: User[] = [
   {
     id: 'u_mem_4',
     phone: '0977889900',
+    email: 'em.hoang@gmail.com',
     name: 'Hoàng Văn Em',
     role: 'hui_vien',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
@@ -47,6 +52,7 @@ export const MOCK_USERS: User[] = [
   {
     id: 'u_mem_5',
     phone: '0966554433',
+    email: 'giang.vu@gmail.com',
     name: 'Vũ Thị Giang',
     role: 'hui_vien',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',

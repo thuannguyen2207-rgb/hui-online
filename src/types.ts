@@ -3,6 +3,7 @@ export type UserRole = 'chu_hui' | 'hui_vien';
 export interface User {
   id: string;
   phone: string;
+  email?: string;
   name: string;
   role: UserRole;
   avatar: string;

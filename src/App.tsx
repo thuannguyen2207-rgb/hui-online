@@ -1,7 +1,8 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { Bid, ChatMessage, HuiDay, HuiMember, HuiRound, Transaction, User, UserRole } from './types';
 import { MOCK_BIDS, MOCK_CHAT_MESSAGES, MOCK_HUI_DAYS, MOCK_MEMBERS, MOCK_ROUNDS, MOCK_TRANSACTIONS, MOCK_USERS } from './data/mockData';
 import { calculateMemberStates, calculateRoundPayout, formatVND, generateVietQRUrl, getCycleTypeLabel } from './utils/huiFinancialEngine';
+import { supabase } from './lib/supabase';
 import { Navbar } from './components/Navbar';
 import { LoginScreen } from './components/LoginScreen';
 import { PhoneAuthModal } from './components/PhoneAuthModal';
@@ -24,6 +25,52 @@ export function App() {
   // User Auth State - Initially starts at null to force login first
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+
+  // Supabase Auth Session listener
+  useEffect(() => {
+    // Check initial active session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session?.user?.email) {
+        const email = session.user.email;
+        const matchedUser: User = MOCK_USERS.find(
+          u => u.email?.toLowerCase() === email.toLowerCase()
+        ) || {
+          id: session.user.id,
+          phone: session.user.phone || '0908123456',
+          email: email,
+          name: email.split('@')[0] || 'Hội Viên Supabase',
+          role: email.includes('chuhui') ? 'chu_hui' : 'hui_vien',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          verified: true,
+          bankName: 'MB Bank',
+          accountNumber: '0908123456888',
+          accountName: email.split('@')[0].toUpperCase()
+        };
+        setCurrentUser(matchedUser);
+      }
+    });
+
+    // Subscribe to auth state changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
+      if (session?.user?.email) {
+        const email = session.user.email;
+        const matchedUser: User = MOCK_USERS.find(
+          u => u.email?.toLowerCase() === email.toLowerCase()
+        ) || {
+          id: session.user.id,
+          phone: session.user.phone || '0908123456',
+          email: email,
+          name: email.split('@')[0] || 'Hội Viên Supabase',
+          role: email.includes('chuhui') ? 'chu_hui' : 'hui_vien',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          verified: true,
+        };
+        setCurrentUser(matchedUser);
+      }
+    });
+
+    return () => subscription.unsubscribe();
+  }, []);
 
   // Hui System Data State
   const [huiDays, setHuiDays] = useState<HuiDay[]>(MOCK_HUI_DAYS);
@@ -385,7 +432,10 @@ export function App() {
         onOpenCreateModal={() => setIsCreateModalOpen(true)}
         onOpenExploreModal={() => setIsExploreModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
-        onLogout={() => setCurrentUser(null)}
+        onLogout={async () => {
+          await supabase.auth.signOut();
+          setCurrentUser(null);
+        }}
       />
 
       {/* Main Content Area */}
