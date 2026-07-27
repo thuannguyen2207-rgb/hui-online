@@ -22,7 +22,8 @@ import {
   LogIn,
   AtSign,
   RefreshCw,
-  Send
+  Send,
+  ExternalLink
 } from 'lucide-react';
 
 interface LoginScreenProps {
@@ -52,7 +53,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [errorMsg, setErrorMsg] = useState('');
   const [successMsg, setSuccessMsg] = useState('');
 
-  // 1. SUPABASE STEP 1: SEND EMAIL OTP
+  // 1. SUPABASE STEP 1: SEND EMAIL OTP / MAGIC LINK
   const handleSendEmailOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
@@ -78,7 +79,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         setErrorMsg(`Lỗi kết nối Supabase: ${error.message}`);
       } else {
         setIsEmailOtpSent(true);
-        setSuccessMsg(`Đã gửi mã xác thực OTP 6 số tới ${email}. Vui lòng kiểm tra Email (bao gồm thư mục Spam).`);
+        setSuccessMsg('Hệ thống đã gửi liên kết xác thực tới Email của bạn. Vui lòng kiểm tra hộp thư (bao gồm mục Spam) và bấm vào link để hoàn tất đăng nhập.');
       }
     } catch (err: any) {
       setErrorMsg(err?.message || 'Không thể gửi mã OTP tới Supabase');
@@ -141,6 +142,47 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       }
     } catch (err: any) {
       setErrorMsg(err?.message || 'Có lỗi khi kết nối xác thực Supabase');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // 3. SUPABASE STEP 3: CHECK SESSION AFTER MAGIC LINK
+  const handleCheckSession = async () => {
+    setLoading(true);
+    setErrorMsg('');
+    setSuccessMsg('');
+
+    try {
+      const { data: { session }, error } = await supabase.auth.getSession();
+      if (error) {
+        setErrorMsg(`Lỗi kiểm tra phiên: ${error.message}`);
+      } else if (session?.user?.email) {
+        const verifiedEmail = session.user.email;
+        const matchedUser: User = MOCK_USERS.find(
+          u => u.email?.toLowerCase() === verifiedEmail.toLowerCase()
+        ) || {
+          id: session.user.id,
+          phone: session.user.phone || '0908123456',
+          email: verifiedEmail,
+          name: verifiedEmail.split('@')[0] || 'Hội Viên Supabase',
+          role: verifiedEmail.includes('chuhui') ? 'chu_hui' : 'hui_vien',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          verified: true,
+          bankName: 'MB Bank',
+          accountNumber: '0908123456888',
+          accountName: verifiedEmail.split('@')[0].toUpperCase()
+        };
+
+        setSuccessMsg('Xác thực Magic Link thành công! Đang chuyển vào hệ thống...');
+        setTimeout(() => {
+          onLoginSuccess(matchedUser);
+        }, 400);
+      } else {
+        setErrorMsg('Chưa phát hiện phiên đăng nhập mới. Vui lòng nhấp vào liên kết xác thực (Magic Link) trong Email trước rồi bấm nút này.');
+      }
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Có lỗi khi kiểm tra phiên đăng nhập');
     } finally {
       setLoading(false);
     }
@@ -343,16 +385,34 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                   </button>
                 </form>
               ) : (
-                /* STEP 2: ENTER 6-DIGIT OTP & VERIFY */
-                <form onSubmit={handleVerifyEmailOtp} className="space-y-4 animate-fade-in">
-                  <div className="p-3 bg-slate-950 border border-amber-500/40 rounded-2xl space-y-2 text-center">
-                    <div className="text-xs text-slate-300">
-                      Đã gửi mã xác thực đến: <strong className="text-amber-400 font-mono">{emailForOtp}</strong>
+                /* STEP 2: MAGIC LINK & 6-DIGIT OTP VERIFY */
+                <div className="space-y-4 animate-fade-in">
+                  {/* Magic Link Banner */}
+                  <div className="p-3.5 bg-amber-500/10 border border-amber-500/40 rounded-2xl space-y-2 text-left">
+                    <div className="flex items-start space-x-2.5">
+                      <Mail className="h-5 w-5 text-amber-400 shrink-0 mt-0.5" />
+                      <div className="text-xs text-slate-200 leading-relaxed">
+                        Hệ thống đã gửi liên kết xác thực tới Email <strong className="text-amber-400 font-mono">{emailForOtp}</strong>. Vui lòng kiểm tra hộp thư (bao gồm mục Spam) và bấm vào link để hoàn tất đăng nhập.
+                      </div>
                     </div>
+                  </div>
 
-                    <div>
-                      <label className="block text-xs font-bold text-amber-300 mb-1">
-                        Nhập Mã OTP 6 Chữ Số:
+                  {/* Nút kiểm tra phiên đăng nhập */}
+                  <button
+                    type="button"
+                    onClick={handleCheckSession}
+                    disabled={loading}
+                    className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold py-3 px-4 rounded-xl shadow-xl shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all text-xs active:scale-98"
+                  >
+                    <RefreshCw className={`h-4 w-4 ${loading ? 'animate-spin' : ''}`} />
+                    <span>TỰ ĐỘNG KIỂM TRA TRẠNG THÁI ĐĂNG NHẬP</span>
+                  </button>
+
+                  {/* Song song đó: Nhập mã OTP 6 số nếu có */}
+                  <form onSubmit={handleVerifyEmailOtp} className="pt-3 border-t border-slate-800 space-y-3">
+                    <div className="text-center space-y-1">
+                      <label className="block text-xs font-bold text-slate-300">
+                        Hoặc nhập mã OTP 6 chữ số (nếu có):
                       </label>
                       <input
                         type="text"
@@ -360,35 +420,33 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                         value={otpToken}
                         onChange={(e) => setOtpToken(e.target.value.replace(/\D/g, ''))}
                         placeholder="123456"
-                        autoFocus
-                        required
-                        className="w-full bg-slate-900 border-2 border-amber-500 rounded-xl py-2.5 text-center text-2xl font-mono tracking-[0.4em] text-amber-400 focus:outline-none shadow-inner"
+                        className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl py-2.5 text-center text-xl font-mono tracking-[0.3em] text-amber-400 focus:outline-none"
                       />
                     </div>
-                  </div>
 
-                  <button
-                    type="submit"
-                    disabled={loading || otpToken.length < 6}
-                    className="w-full bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-extrabold py-3 px-4 rounded-xl shadow-xl shadow-emerald-500/20 flex items-center justify-center space-x-2 transition-all text-sm disabled:opacity-50"
-                  >
-                    {loading ? (
-                      <span className="flex items-center space-x-2">
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                        <span>Đang xác minh OTP...</span>
-                      </span>
-                    ) : (
-                      <>
-                        <span>XÁC MINH MÃ OTP & ĐĂNG NHẬP</span>
-                        <CheckCircle2 className="h-4 w-4" />
-                      </>
-                    )}
-                  </button>
+                    <button
+                      type="submit"
+                      disabled={loading || otpToken.length < 6}
+                      className="w-full bg-emerald-600 hover:bg-emerald-500 text-slate-950 font-extrabold py-2.5 px-4 rounded-xl flex items-center justify-center space-x-2 transition-all text-xs disabled:opacity-50"
+                    >
+                      {loading ? (
+                        <span className="flex items-center space-x-2">
+                          <RefreshCw className="h-4 w-4 animate-spin" />
+                          <span>Đang xác minh OTP...</span>
+                        </span>
+                      ) : (
+                        <>
+                          <span>XÁC MINH MÃ OTP</span>
+                          <CheckCircle2 className="h-4 w-4" />
+                        </>
+                      )}
+                    </button>
+                  </form>
 
                   <div className="flex justify-between items-center text-xs text-slate-400 pt-1">
                     <button
                       type="button"
-                      onClick={() => { setIsEmailOtpSent(false); setOtpToken(''); setErrorMsg(''); }}
+                      onClick={() => { setIsEmailOtpSent(false); setOtpToken(''); setErrorMsg(''); setSuccessMsg(''); }}
                       className="hover:text-amber-400 underline"
                     >
                       ← Đổi địa chỉ Email
@@ -399,10 +457,10 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                       disabled={loading}
                       className="hover:text-emerald-400 underline"
                     >
-                      Gửi lại mã OTP
+                      Gửi lại Email xác thực
                     </button>
                   </div>
-                </form>
+                </div>
               )}
             </div>
           )}
