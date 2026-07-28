@@ -9,6 +9,7 @@ export const MOCK_USERS: User[] = [
     role: 'chu_hui',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     verified: true,
+    address: '123 Đường Nguyễn Trãi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh',
     bankName: 'MB Bank (Ngân Hàng Quân Đội)',
     accountNumber: '0908123456888',
     accountName: 'NGUYEN VAN AN',
@@ -21,6 +22,7 @@ export const MOCK_USERS: User[] = [
     role: 'hui_vien',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
     verified: true,
+    address: '456 Lê Văn Sỹ, Phường 12, Quận 3, TP. Hồ Chí Minh',
   },
   {
     id: 'u_mem_2',

@@ -99,9 +99,12 @@ export const ElectronicContractModal: React.FC<ElectronicContractModalProps> = (
 
         {/* SUMMARY OF ACTION */}
         <div className="p-3.5 bg-slate-950 rounded-2xl border border-slate-800 space-y-2 text-xs font-mono">
-          <div className="flex justify-between items-center text-slate-400 border-b border-slate-800/80 pb-2">
+          <div className="flex justify-between items-start text-slate-400 border-b border-slate-800/80 pb-2">
             <span>Bên Yêu Cầu Ký Kết (Bên A):</span>
-            <strong className="text-white text-sm">{currentUser.name} (ID: {currentUser.id})</strong>
+            <div className="text-right">
+              <strong className="text-white text-sm block">{currentUser.name} (ID: {currentUser.id})</strong>
+              <span className="text-[11px] text-slate-400 block font-sans">SĐT: {currentUser.phone} {currentUser.address ? `• ĐC: ${currentUser.address}` : ''}</span>
+            </div>
           </div>
           <div className="flex justify-between items-center text-slate-400 border-b border-slate-800/80 pb-2">
             <span>Bên Cung Cấp Dịch Vụ (Bên B):</span>

@@ -8,6 +8,7 @@ export interface User {
   role: UserRole;
   avatar: string;
   verified: boolean;
+  address?: string;
   idCardNumber?: string;
   idCardFrontUrl?: string;
   idCardBackUrl?: string;

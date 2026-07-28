@@ -19,7 +19,8 @@ import {
   Image as ImageIcon,
   Lock,
   Camera,
-  Check
+  Check,
+  MapPin
 } from 'lucide-react';
 
 const PRESET_AVATARS = [
@@ -50,6 +51,7 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
   const [name, setName] = useState(currentUser.name || '');
   const [phone, setPhone] = useState(currentUser.phone || '');
   const [email, setEmail] = useState(currentUser.email || '');
+  const [address, setAddress] = useState(currentUser.address || '');
   const [idCardNumber, setIdCardNumber] = useState(currentUser.idCardNumber || '');
   const [avatar, setAvatar] = useState(currentUser.avatar || PRESET_AVATARS[0]);
 
@@ -89,6 +91,7 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
       name: name.trim(),
       phone: phone.trim(),
       email: email.trim(),
+      address: address.trim(),
       idCardNumber: idCardNumber.trim(),
       avatar,
       bankCode: bankCode.toUpperCase().trim(),
@@ -312,6 +315,21 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
                     onChange={(e) => setIdCardNumber(e.target.value)}
                     placeholder="079201012345"
                     className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-slate-200 font-mono text-xs focus:outline-none"
+                  />
+                </div>
+
+                {/* Home Address */}
+                <div className="sm:col-span-2">
+                  <label className="block text-xs font-bold text-slate-300 mb-1 flex items-center space-x-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-amber-400" />
+                    <span>Địa Chỉ Nhà / Thường Trú</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={address}
+                    onChange={(e) => setAddress(e.target.value)}
+                    placeholder="Số nhà, Đường, Phường/Xã, Quận/Huyện, Tỉnh/Thành phố"
+                    className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3.5 py-2.5 text-slate-200 text-xs focus:outline-none"
                   />
                 </div>
 

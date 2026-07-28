@@ -736,7 +736,9 @@ export function App() {
 
       {/* Main Content Area */}
       <main className="flex-1">
-        {activeView === 'app' ? (
+        {!currentUser ? (
+          <LoginScreen onLoginSuccess={(user) => setCurrentUser(user)} />
+        ) : activeView === 'app' ? (
           <MobileContainer isMobileFrame={isMobileFrame}>
             
             {/* Hui Day Selector Toolbar Container with Left / Right Scroll Controls */}
