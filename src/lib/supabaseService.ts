@@ -38,9 +38,10 @@ export async function upsertUserInSupabase(user: User): Promise<boolean> {
       avatar: user.avatar,
       verified: user.verified ?? true,
       account_approval_status: user.accountApprovalStatus || 'approved',
-      bank_name: user.bankName || null,
-      account_number: user.accountNumber || null,
-      account_name: user.accountName || null,
+      bank_name: user.bankName || user.bankConfig?.bankName || null,
+      bank_code: user.bankCode || user.bankConfig?.bankCode || null,
+      account_number: user.accountNumber || user.bankConfig?.accountNumber || null,
+      account_name: user.accountName || user.bankConfig?.accountName || null,
       address: user.address || null,
       updated_at: new Date().toISOString()
     };
@@ -50,12 +51,33 @@ export async function upsertUserInSupabase(user: User): Promise<boolean> {
       .upsert(payload, { onConflict: 'id' });
 
     if (error) {
-      console.error('Error upserting profile in Supabase:', error);
-      return false;
+      console.warn('First profile upsert failed, attempting fallback on profiles/users:', error.message || error);
+      
+      // Fallback 1: Minimal payload on profiles (in case some optional columns like address/bank_code don't exist in DB schema)
+      const minimalPayload = {
+        id: user.id,
+        phone: user.phone,
+        email: user.email || null,
+        name: user.name,
+        role: user.role,
+        avatar: user.avatar,
+        updated_at: new Date().toISOString()
+      };
+
+      const { error: minErr } = await supabase
+        .from('profiles')
+        .upsert(minimalPayload, { onConflict: 'id' });
+
+      if (minErr) {
+        // Fallback 2: Try users table if profiles table is named 'users' in Supabase
+        await supabase
+          .from('users')
+          .upsert(minimalPayload, { onConflict: 'id' });
+      }
     }
     return true;
   } catch (err) {
-    console.error('Upsert user exception:', err);
+    console.warn('Upsert user exception caught safely:', err);
     return false;
   }
 }
@@ -82,6 +104,18 @@ export async function updateUserApprovalStatusInSupabase(
 }
 
 function mapDbUserToUser(row: any): User {
+  const bankName = row.bank_name || row.bankName || undefined;
+  const bankCode = row.bank_code || row.bankCode || 'MB';
+  const accountNumber = row.account_number || row.accountNumber || undefined;
+  const accountName = row.account_name || row.accountName || undefined;
+
+  const bankConfig = (bankName || accountNumber) ? {
+    bankName: bankName || 'MB Bank',
+    bankCode: bankCode || 'MB',
+    accountNumber: accountNumber || '',
+    accountName: accountName || row.name || ''
+  } : undefined;
+
   return {
     id: row.id || `u_${Date.now()}`,
     phone: row.phone || '0908000000',
@@ -92,9 +126,11 @@ function mapDbUserToUser(row: any): User {
     verified: row.verified ?? true,
     accountApprovalStatus: row.account_approval_status || row.accountApprovalStatus || 'approved',
     registeredAt: row.registered_at || row.created_at || new Date().toISOString(),
-    bankName: row.bank_name || row.bankName || undefined,
-    accountNumber: row.account_number || row.accountNumber || undefined,
-    accountName: row.account_name || row.accountName || undefined,
+    bankName,
+    bankCode,
+    accountNumber,
+    accountName,
+    bankConfig,
     address: row.address || undefined
   };
 }

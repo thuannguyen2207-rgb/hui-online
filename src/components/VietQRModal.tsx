@@ -34,10 +34,14 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
 
   if (!isOpen || !transaction) return null;
 
+  const safeBankCode = bankCode || 'MB';
+  const safeAccountNumber = accountNumber || '';
+  const safeAccountName = accountName || '';
+
   const qrImageUrl = generateVietQRUrl(
-    bankCode,
-    accountNumber,
-    accountName,
+    safeBankCode,
+    safeAccountNumber,
+    safeAccountName,
     transaction.amountDue,
     transaction.paymentRef
   );
@@ -104,8 +108,8 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
           <div className="flex items-center justify-between pb-2 border-b border-slate-800">
             <div>
               <span className="text-slate-400 text-[11px] block">Ngân Hàng & Số Tài Khoản</span>
-              <span className="font-bold text-white text-sm font-mono">{bankCode} - {accountNumber}</span>
-              <span className="text-slate-400 text-[11px] block uppercase font-mono">{accountName}</span>
+              <span className="font-bold text-white text-sm font-mono">{safeBankCode} - {safeAccountNumber}</span>
+              <span className="text-slate-400 text-[11px] block uppercase font-mono">{safeAccountName}</span>
             </div>
             <button
               onClick={() => copyToClipboard(accountNumber, 'account')}

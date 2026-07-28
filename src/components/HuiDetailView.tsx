@@ -80,6 +80,13 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
   onRejectMemberBank,
   onToggleHuiFeature,
 }) => {
+  if (!currentUser || !huiDay) {
+    return (
+      <div className="flex items-center justify-center p-12 text-slate-400">
+        <span>Đang tải thông tin hụi...</span>
+      </div>
+    );
+  }
   const [activeTab, setActiveTab] = useState<'ledger' | 'bidding' | 'chat' | 'config' | 'members'>('ledger');
   const [bidAmountInput, setBidAmountInput] = useState<number>(huiDay.shareAmount * 0.2); // Default ~20%
   const [chatInput, setChatInput] = useState('');
@@ -259,7 +266,7 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
               className="px-4 py-2 rounded-xl text-xs font-extrabold bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 shadow-md flex items-center space-x-1.5 transition-all shrink-0 active:scale-95"
             >
               <Landmark className="h-4 w-4 text-emerald-400" />
-              <span>🏦 VAY P2P & HŨ MÃN HẠN</span>
+              <span>🏦 HŨ TÍCH LŨY & HŨ MÃN HẠN</span>
             </button>
           )}
 
@@ -771,7 +778,7 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
               }`}>
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
-                    <span className="font-bold text-sm text-white">1. Cho Vay Ngang Hàng (P2P Lending)</span>
+                    <span className="font-bold text-sm text-white">1. Hũ Tích Lũy Xoay Vòng</span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
                       huiDay.allowP2pLending !== false ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                     }`}>
@@ -1058,8 +1065,8 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
 
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {approvedMembers.map((m) => {
-                const isMe = m.userId === currentUser.id;
-                const isHost = currentUser.role === 'chu_hui' || currentUser.id === huiDay.hostId;
+                const isMe = m.userId === currentUser?.id;
+                const isHost = currentUser?.role === 'chu_hui' || currentUser?.id === huiDay?.hostId;
                 const canSeeBank = isHost || isMe;
 
                 return (
@@ -1088,10 +1095,10 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
                             <div>
                               <span className="text-slate-400 block text-[10px]">TK Ngân hàng (Đã duyệt):</span>
                               <span className="font-mono font-bold text-emerald-400 block">
-                                {m.bankConfig.bankCode} - {m.bankConfig.accountNumber}
+                                {m.bankConfig?.bankCode} - {m.bankConfig?.accountNumber}
                               </span>
                               <span className="text-[10px] text-slate-300 uppercase block font-semibold">
-                                {m.bankConfig.accountName}
+                                {m.bankConfig?.accountName}
                               </span>
                             </div>
                             {isHost && onOpenRegisterBankModal && (
@@ -1108,7 +1115,7 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
                             <div>
                               <span className="text-amber-400 font-bold block text-[10px]">⏳ Chờ Chủ Hụi duyệt TK:</span>
                               <span className="font-mono text-amber-300 block">
-                                {m.pendingBankConfig.bankCode} - {m.pendingBankConfig.accountNumber}
+                                {m.pendingBankConfig?.bankCode} - {m.pendingBankConfig?.accountNumber}
                               </span>
                             </div>
                             {isHost && onApproveMemberBank && (

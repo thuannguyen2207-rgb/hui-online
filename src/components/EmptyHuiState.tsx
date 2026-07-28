@@ -40,7 +40,9 @@ export const EmptyHuiState: React.FC<EmptyHuiStateProps> = ({
             Chưa Có Dây Hụi Nào Trong Hệ Thống
           </h2>
           <p className="text-sm text-slate-300 leading-relaxed font-medium">
-            Chưa có dây hụi nào. Bấm nút bên dưới để tạo dây hụi đầu tiên.
+            {isHost 
+              ? 'Chưa có dây hụi nào. Bấm nút bên dưới để khởi tạo dây hụi đầu tiên.'
+              : 'Bạn đang truy cập ở quyền Hội Viên. Chỉ Chủ Hụi (Host Admin) mới có quyền khởi tạo dây hụi mới.'}
           </p>
           <p className="text-xs text-slate-500">
             Dữ liệu kết nối trực tiếp với Supabase Database • Minh bạch & An toàn
@@ -59,23 +61,26 @@ export const EmptyHuiState: React.FC<EmptyHuiStateProps> = ({
           </div>
         </div>
 
-        {/* Primary Action Button */}
+        {/* Action Buttons */}
         <div className="space-y-2.5 pt-2">
-          <button
-            onClick={onCreateHuiClick}
-            className="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black py-3.5 px-6 rounded-2xl shadow-xl shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all active:scale-98 text-sm"
-          >
-            <PlusCircle className="h-5 w-5" />
-            <span>+ Tạo Dây Hụi Đầu Tiên Ngay</span>
-          </button>
-
-          {onExploreHuiClick && (
+          {isHost ? (
             <button
-              onClick={onExploreHuiClick}
-              className="w-full bg-slate-950 hover:bg-slate-800 text-slate-300 hover:text-white border border-slate-800 font-bold py-2.5 px-4 rounded-xl text-xs transition-colors"
+              onClick={onCreateHuiClick}
+              className="w-full bg-gradient-to-r from-amber-500 via-amber-600 to-amber-500 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-black py-3.5 px-6 rounded-2xl shadow-xl shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all active:scale-98 text-sm"
             >
-              Tìm Kiếm Dây Hụi Qua Mã Code
+              <PlusCircle className="h-5 w-5" />
+              <span>+ Tạo Dây Hụi Đầu Tiên Ngay</span>
             </button>
+          ) : (
+            onExploreHuiClick && (
+              <button
+                onClick={onExploreHuiClick}
+                className="w-full bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black py-3.5 px-6 rounded-2xl shadow-xl flex items-center justify-center space-x-2 transition-all active:scale-98 text-sm"
+              >
+                <Layers className="h-5 w-5" />
+                <span>Tìm Kiếm & Tham Gia Dây Hụi Qua Mã Code</span>
+              </button>
+            )
           )}
         </div>
 

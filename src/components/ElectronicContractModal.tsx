@@ -92,7 +92,7 @@ export const ElectronicContractModal: React.FC<ElectronicContractModalProps> = (
               <span>ĐƠN VỊ CUNG CẤP DỊCH VỤ: BÊN THỨ BA (THIRD-PARTY PROVIDER)</span>
             </div>
             <p className="text-slate-300 leading-relaxed">
-              Tất cả các dịch vụ tài chính cho vay P2P ngang hàng, tài trợ vốn, hũ tiết kiệm tích lũy và quản lý dòng tiền mãn hạn đều được <strong>trực tiếp cung cấp, vận hành và quản lý số dư bởi: <span className="text-amber-300 font-bold">{partnerName}</span></strong>. Hệ thống Hụi Online giữ vai trò cổng kết nối hạ tầng công nghệ và giao diện hiển thị.
+              Tất cả các dịch vụ tài chính hũ tích lũy xoay vòng, tài trợ vốn, hũ tiết kiệm tích lũy và quản lý dòng tiền mãn hạn đều được <strong>trực tiếp cung cấp, vận hành và quản lý số dư bởi: <span className="text-amber-300 font-bold">{partnerName}</span></strong>. Hệ thống Hụi Online giữ vai trò cổng kết nối hạ tầng công nghệ và giao diện hiển thị.
             </p>
           </div>
         </div>
@@ -141,7 +141,7 @@ export const ElectronicContractModal: React.FC<ElectronicContractModalProps> = (
             </p>
 
             <p>
-              <strong>ĐIỀU 3: NGHĨA VỤ HOÀN TRẢ VÀ THẾ CHẤP KHOẢN VAY P2P</strong><br />
+              <strong>ĐIỀU 3: NGHĨA VỤ HOÀN TRẢ VÀ THẾ CHẤP KHOẢN HŨ TÍCH LŨY</strong><br />
               3.1. Người vay có nghĩa vụ hoàn trả đầy đủ gốc và lãi cho bên cấp vốn / bên thứ 3 đúng hạn thỏa thuận.<br />
               3.2. Quyền tài sản đối với Suất Hụi được thế chấp sẽ tự động chuyển nhượng cho bên cấp vốn hoặc đối tác thứ ba để cấn trừ rủi ro nếu người vay quá hạn thanh toán trên 05 ngày.
             </p>
@@ -153,7 +153,7 @@ export const ElectronicContractModal: React.FC<ElectronicContractModalProps> = (
 
             <p>
               <strong>ĐIỀU 5: HẠN MỨC TRẦN CHI PHÍ VÀ LÃI SUẤT (TỐI ĐA ≤ 20%/NĂM)</strong><br />
-              5.1. Cam kết toàn bộ chi phí giao dịch, phí quản lý nền tảng, phí tháo chủ hụi và lãi suất khoản vay P2P đều nằm ở mức <strong>từ 20%/năm trở xuống (≤ 20%/năm)</strong> theo Bộ luật Dân sự và chính sách bảo vệ khách hàng của Đơn vị cung cấp dịch vụ Bên Thứ Ba.
+              5.1. Cam kết toàn bộ chi phí giao dịch, phí quản lý nền tảng, phí tháo chủ hụi và lãi suất khoản hũ tích lũy đều nằm ở mức <strong>từ 20%/năm trở xuống (≤ 20%/năm)</strong> theo Bộ luật Dân sự và chính sách bảo vệ khách hàng của Đơn vị cung cấp dịch vụ Bên Thứ Ba.
             </p>
           </div>
         </div>
@@ -184,7 +184,7 @@ export const ElectronicContractModal: React.FC<ElectronicContractModalProps> = (
                 {check2 ? <CheckSquare className="h-5 w-5" /> : <Square className="h-5 w-5 text-slate-600" />}
               </div>
               <span className="text-slate-200">
-                Tôi hiểu rõ và đồng ý rằng <strong>tất cả dịch vụ cho vay P2P và tiết kiệm/tích lũy hụi mãn hạn đều do Bên Thứ Ba (Đối Tác Tín Dụng & Ngân Hàng)</strong> cung cấp.
+                Tôi hiểu rõ và đồng ý rằng <strong>tất cả dịch vụ hũ tích lũy xoay vòng và tiết kiệm/tích lũy hụi mãn hạn đều do Bên Thứ Ba (Đối Tác Tín Dụng & Ngân Hàng)</strong> cung cấp.
               </span>
             </div>
 

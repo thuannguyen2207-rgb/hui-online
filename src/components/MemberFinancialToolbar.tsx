@@ -38,10 +38,20 @@ export const MemberFinancialToolbar: React.FC<MemberFinancialToolbarProps> = ({
   transactions,
   onOpenVietQR,
 }) => {
+  if (!huiDay || !currentUser) return null;
+
   const scrollContainerRef = useRef<HTMLDivElement>(null);
   
   // Interactive Slider State for Estimating Profit / Loss
   const [interactiveBid, setInteractiveBid] = useState<number>(huiDay.shareAmount * 0.15); // ~15% default
+
+  // Safe bank config fallback
+  const hostBankConfig = huiDay?.bankConfig || {
+    bankCode: 'MB',
+    bankName: 'MB Bank',
+    accountNumber: '',
+    accountName: '',
+  };
 
   // Member record
   const myMemberRecord = members.find(m => m.userId === currentUser.id);
@@ -62,9 +72,9 @@ export const MemberFinancialToolbar: React.FC<MemberFinancialToolbarProps> = ({
       : (huiDay.shareAmount - (huiDay.minBidValue || 0)) * sharesCount,
     status: 'unpaid' as const,
     vietqrCode: generateVietQRUrl(
-      huiDay.bankConfig.bankCode,
-      huiDay.bankConfig.accountNumber,
-      huiDay.bankConfig.accountName,
+      hostBankConfig.bankCode || 'MB',
+      hostBankConfig.accountNumber || '',
+      hostBankConfig.accountName || '',
       myMemberRecord?.hasPayout ? huiDay.shareAmount * sharesCount : (huiDay.shareAmount - (huiDay.minBidValue || 0)) * sharesCount,
       `DONG HUI ${huiDay.inviteCode} K${huiDay.currentRound}`
     ),

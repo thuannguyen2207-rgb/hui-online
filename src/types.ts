@@ -60,7 +60,7 @@ export interface HuiDay {
   bankConfig: BankConfig;
   description?: string;
   createdAt: string;
-  allowP2pLending?: boolean; // Tùy chọn đóng/mở Cho Vay Ngang Hàng do Chủ Hụi quản lý
+  allowP2pLending?: boolean; // Tùy chọn đóng/mở Hũ Tích Lũy do Chủ Hụi quản lý
   allowMaturityVault?: boolean; // Tùy chọn đóng/mở Hũ Tích Lũy Mãn Hạn do Chủ Hụi quản lý
 }
 

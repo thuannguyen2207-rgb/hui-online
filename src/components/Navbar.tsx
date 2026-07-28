@@ -310,14 +310,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                   </button>
                 )}
 
-                <button
-                  onClick={onOpenCreateModal}
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-extrabold px-3.5 py-1.5 rounded-xl shadow-md flex items-center space-x-1.5 transition-all active:scale-95"
-                  title="Tạo dây hụi mới"
-                >
-                  <PlusCircle className="h-3.5 w-3.5" />
-                  <span>+ Tạo Dây Hụi</span>
-                </button>
+                {currentUser?.role === 'chu_hui' && (
+                  <button
+                    onClick={onOpenCreateModal}
+                    className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-extrabold px-3.5 py-1.5 rounded-xl shadow-md flex items-center space-x-1.5 transition-all active:scale-95"
+                    title="Tạo dây hụi mới (Dành cho Chủ Hụi)"
+                  >
+                    <PlusCircle className="h-3.5 w-3.5" />
+                    <span>+ Tạo Dây Hụi</span>
+                  </button>
+                )}
               </>
             )}
 

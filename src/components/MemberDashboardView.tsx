@@ -66,6 +66,13 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
   onOpenLiveBiddingModal,
   onOpenExtendedServicesModal,
 }) => {
+  if (!currentUser || !huiDay) {
+    return (
+      <div className="flex items-center justify-center p-12 text-slate-400">
+        <span>Đang tải thông tin...</span>
+      </div>
+    );
+  }
   const [activeSubTab, setActiveSubTab] = useState<'my_status' | 'bid_portal' | 'public_ledger' | 'chat'>('my_status');
   const [bidAmountInput, setBidAmountInput] = useState<number>(huiDay.shareAmount * 0.15); // ~15% default
   const [chatInput, setChatInput] = useState('');
@@ -490,15 +497,15 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
                   <div className="pt-2 border-t border-slate-900 space-y-1">
                     <div className="flex justify-between">
                       <span className="text-slate-400">Ngân hàng:</span>
-                      <span className="text-white font-bold">{myMemberRecord.bankConfig.bankCode} ({myMemberRecord.bankConfig.bankName})</span>
+                      <span className="text-white font-bold">{myMemberRecord.bankConfig?.bankCode} ({myMemberRecord.bankConfig?.bankName})</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Số tài khoản:</span>
-                      <span className="text-emerald-400 font-mono font-bold">{myMemberRecord.bankConfig.accountNumber}</span>
+                      <span className="text-emerald-400 font-mono font-bold">{myMemberRecord.bankConfig?.accountNumber}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Tên chủ tài khoản:</span>
-                      <span className="text-white font-bold uppercase">{myMemberRecord.bankConfig.accountName}</span>
+                      <span className="text-white font-bold uppercase">{myMemberRecord.bankConfig?.accountName}</span>
                     </div>
                   </div>
                 </div>
@@ -514,15 +521,15 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
                   <div className="pt-2 border-t border-slate-900 space-y-1">
                     <div className="flex justify-between">
                       <span className="text-slate-400">Ngân hàng yêu cầu:</span>
-                      <span className="text-white font-bold">{myMemberRecord.pendingBankConfig.bankCode} ({myMemberRecord.pendingBankConfig.bankName})</span>
+                      <span className="text-white font-bold">{myMemberRecord.pendingBankConfig?.bankCode} ({myMemberRecord.pendingBankConfig?.bankName})</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Số tài khoản:</span>
-                      <span className="text-amber-300 font-mono font-bold">{myMemberRecord.pendingBankConfig.accountNumber}</span>
+                      <span className="text-amber-300 font-mono font-bold">{myMemberRecord.pendingBankConfig?.accountNumber}</span>
                     </div>
                     <div className="flex justify-between">
                       <span className="text-slate-400">Tên chủ tài khoản:</span>
-                      <span className="text-white font-bold uppercase">{myMemberRecord.pendingBankConfig.accountName}</span>
+                      <span className="text-white font-bold uppercase">{myMemberRecord.pendingBankConfig?.accountName}</span>
                     </div>
                   </div>
                 </div>

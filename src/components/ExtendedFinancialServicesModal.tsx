@@ -93,9 +93,9 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
     e.preventDefault();
     setPendingContract({
       context: {
-        title: 'HỢP ĐỒNG ĐIỆN TỬ ĐĂNG YÊU CẦU VAY P2P NGANG HÀNG',
+        title: 'HỢP ĐỒNG ĐIỆN TỬ ĐĂNG YÊU CẦU TẠO HŨ TÍCH LŨY',
         actionType: 'p2p_borrow',
-        partnerName: 'Công Ty FinTech & Quỹ Tín Dụng Ngang Hàng Partner P2P (Bên Thứ Ba)',
+        partnerName: 'Công Ty FinTech & Quỹ Tín Dụng Hũ Tích Lũy (Bên Thứ Ba)',
         summaryText: `Đăng khoản vay ${loanAmount.toLocaleString('vi-VN')} đ (${loanTerm} tháng, Lãi ${loanInterest}%/năm) - Tài sản đảm bảo: ${loanCollateral}`,
         amount: loanAmount,
       },
@@ -209,7 +209,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                   : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
               }`}>
                 <div>
-                  <span className="font-extrabold block text-white">1. Cho Vay Ngang Hàng (P2P)</span>
+                  <span className="font-extrabold block text-white">1. Hũ Tích Lũy xoay vòng</span>
                   <span className="text-[10px] text-slate-400">Trạng thái: {activeHuiDay?.allowP2pLending !== false ? '🟢 Đang Mở' : '🔴 Đã Đóng'}</span>
                 </div>
                 {onToggleHuiFeature && activeHuiDay && (
@@ -275,7 +275,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
             }`}
           >
             <HandCoins className="h-5 w-5" />
-            <span>CHO VAY NGANG HÀNG P2P</span>
+            <span>HŨ TÍCH LŨY</span>
             <span className="bg-slate-950/30 text-[10px] px-2 py-0.5 rounded-full text-slate-950 font-black">
               {openP2PLoans.length}
             </span>
@@ -595,7 +595,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
               <HandCoins className="h-6 w-6 text-amber-400 shrink-0 mt-0.5" />
               <div className="space-y-1 text-xs sm:text-sm text-slate-200">
                 <h4 className="font-extrabold text-amber-400 text-base uppercase">
-                  SÀN TÍN DỤNG HỤI NGANG HÀNG (P2P COLLATERAL LOANS)
+                  SÀN VAY VỐN & HŨ TÍCH LŨY HỤI
                 </h4>
                 <p className="text-slate-300 leading-relaxed">
                   Cho phép các hội viên vay vốn xoay vòng hoặc đóng hụi bằng cách <strong>thế chấp Suất Hụi</strong> hoặc uy tín trên sàn. Người cho vay nhận lãi suất hấp dẫn trực tiếp từ bên vay mà không qua trung gian ngân hàng.
@@ -609,7 +609,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                 <Lock className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
                 <div className="space-y-0.5 text-xs">
                   <h4 className="font-extrabold text-rose-200 uppercase">
-                    CHỨC NĂNG CHO VAY NGANG HÀNG (P2P) ĐANG TẠM ĐÓNG BỞI CHỦ HỤI
+                    CHỨC NĂNG HŨ TÍCH LŨY ĐANG TẠM ĐÓNG BỞI CHỦ HỤI
                   </h4>
                   <p className="text-rose-300/90">
                     Chủ Hụi đã tạm đóng chức năng đăng yêu cầu vay mới cho dây hụi này. Các khoản vay đã khớp trước đó vẫn tiếp tục thực hiện theo hợp đồng.
@@ -639,7 +639,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                   className="px-4 py-2.5 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-extrabold text-xs rounded-xl shadow-md flex items-center space-x-2 transition-transform active:scale-95"
                 >
                   <Plus className="h-4 w-4 text-slate-950" />
-                  <span>Tạo Đơn Vay P2P Mới</span>
+                  <span>Tạo Yêu Cầu Hũ Tích Lũy Mới</span>
                 </button>
               )}
             </div>
@@ -650,7 +650,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                 <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
                   <h4 className="font-extrabold text-amber-400 text-sm flex items-center space-x-2 uppercase">
                     <HandCoins className="h-4 w-4" />
-                    <span>Đăng Yêu Cầu Vay Vốn Ngang Hàng P2P</span>
+                    <span>Đăng Yêu Cầu Vốn Hũ Tích Lũy</span>
                   </h4>
                   <button type="button" onClick={() => setShowCreateLoanForm(false)} className="text-slate-400 hover:text-white">
                     <X className="h-5 w-5" />
@@ -748,7 +748,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                   className="w-full py-3 bg-gradient-to-r from-amber-500 to-orange-500 hover:from-amber-400 hover:to-orange-400 text-slate-950 font-black text-xs rounded-xl shadow-lg flex items-center justify-center space-x-2"
                 >
                   <HandCoins className="h-4 w-4" />
-                  <span>XÁC NHẬN ĐĂNG KHOẢN VAY P2P</span>
+                  <span>XÁC NHẬN ĐĂNG KHOẢN HŨ TÍCH LŨY</span>
                 </button>
               </form>
             )}
@@ -757,7 +757,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
             {p2pLoans.length === 0 ? (
               <div className="text-center py-12 bg-slate-950/60 border border-slate-800 rounded-3xl space-y-3">
                 <HandCoins className="h-12 w-12 mx-auto text-slate-600" />
-                <p className="text-slate-300 font-bold text-sm">Chưa có khoản vay P2P nào trên hệ thống.</p>
+                <p className="text-slate-300 font-bold text-sm">Chưa có khoản hũ tích lũy nào trên hệ thống.</p>
                 <p className="text-slate-500 text-xs max-w-md mx-auto">
                   Hãy đăng đơn vay đầu tiên nếu bạn cần xoay vốn nhanh hoặc tài trợ cho hội viên khác để kiếm lãi suất!
                 </p>
@@ -837,7 +837,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                               onClick={() => {
                                 setPendingContract({
                                   context: {
-                                    title: 'HỢP ĐỒNG ĐIỆN TỬ CẤP VỐN TÀI TRỢ KHOẢN VAY P2P',
+                                    title: 'HỢP ĐỒNG ĐIỆN TỬ CẤP VỐN TÀI TRỢ HŨ TÍCH LŨY',
                                     actionType: 'p2p_fund',
                                     partnerName: 'Tập Đoàn FinTech & Trung Tâm Báo Cáo Tín Dụng Tín Nhiệm (Bên Thứ Ba)',
                                     summaryText: `Cấp vốn tài trợ ${loan.amount.toLocaleString('vi-VN')} đ cho khoản vay của ${loan.borrowerName} (Lãi suất ${loan.interestRateYearly}%/năm)`,
@@ -867,7 +867,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                                 className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs rounded-xl shadow-md flex items-center justify-center space-x-2"
                               >
                                 <CheckCircle2 className="h-4 w-4" />
-                                <span>HOÀN TRẢ KHOẢN VAY P2P (GỐC + LÃI)</span>
+                                <span>HOÀN TRẢ KHOẢN HŨ TÍCH LŨY (GỐC + LÃI)</span>
                               </button>
                             )}
                           </div>

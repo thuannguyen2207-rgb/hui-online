@@ -32,38 +32,38 @@ export const MemberRegisterBankModal: React.FC<MemberRegisterBankModalProps> = (
   targetMember,
   onRegisterBank,
 }) => {
-  const isHostAction = currentUser.role === 'chu_hui';
+  const isHostAction = currentUser?.role === 'chu_hui';
   
   // Existing bank config to populate
   const existingConfig = targetMember?.pendingBankConfig || targetMember?.bankConfig || {
-    bankCode: currentUser.bankCode || 'VCB',
-    bankName: currentUser.bankName || 'Vietcombank',
-    accountNumber: currentUser.accountNumber || '',
-    accountName: currentUser.accountName || currentUser.name.toUpperCase(),
+    bankCode: currentUser?.bankCode || 'VCB',
+    bankName: currentUser?.bankName || 'Vietcombank',
+    accountNumber: currentUser?.accountNumber || '',
+    accountName: currentUser?.accountName || currentUser?.name?.toUpperCase() || '',
   };
 
   const [bankCode, setBankCode] = useState(existingConfig.bankCode || 'VCB');
   const [bankName, setBankName] = useState(existingConfig.bankName || 'Vietcombank');
   const [accountNumber, setAccountNumber] = useState(existingConfig.accountNumber || '');
-  const [accountName, setAccountName] = useState(existingConfig.accountName || currentUser.name.toUpperCase());
+  const [accountName, setAccountName] = useState(existingConfig.accountName || currentUser?.name?.toUpperCase() || '');
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
 
   useEffect(() => {
-    if (isOpen) {
+    if (isOpen && currentUser) {
       const cfg = targetMember?.pendingBankConfig || targetMember?.bankConfig || {
         bankCode: currentUser.bankCode || 'VCB',
         bankName: currentUser.bankName || 'Vietcombank',
         accountNumber: currentUser.accountNumber || '',
-        accountName: currentUser.accountName || (targetMember ? targetMember.userName : currentUser.name).toUpperCase(),
+        accountName: currentUser.accountName || (targetMember ? targetMember.userName : currentUser.name || '').toUpperCase(),
       };
       setBankCode(cfg.bankCode || 'VCB');
       setBankName(cfg.bankName || 'Vietcombank');
       setAccountNumber(cfg.accountNumber || '');
-      setAccountName(cfg.accountName || (targetMember ? targetMember.userName : currentUser.name).toUpperCase());
+      setAccountName(cfg.accountName || (targetMember ? targetMember.userName : currentUser.name || '').toUpperCase());
     }
   }, [isOpen, targetMember, currentUser]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !currentUser) return null;
 
   const handleSelectBank = (code: string, name: string) => {
     setBankCode(code);

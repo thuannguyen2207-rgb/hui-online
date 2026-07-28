@@ -50,19 +50,19 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
   const [activeTab, setActiveTab] = useState<'profile' | 'bank' | 'preferences'>('profile');
 
   // Form states
-  const [name, setName] = useState(currentUser.name || '');
-  const [phone, setPhone] = useState(currentUser.phone || '');
-  const [email, setEmail] = useState(currentUser.email || '');
-  const [address, setAddress] = useState(currentUser.address || '');
+  const [name, setName] = useState(currentUser?.name || '');
+  const [phone, setPhone] = useState(currentUser?.phone || '');
+  const [email, setEmail] = useState(currentUser?.email || '');
+  const [address, setAddress] = useState(currentUser?.address || '');
   const [isAddressPickerOpen, setIsAddressPickerOpen] = useState(false);
-  const [idCardNumber, setIdCardNumber] = useState(currentUser.idCardNumber || '');
-  const [avatar, setAvatar] = useState(currentUser.avatar || PRESET_AVATARS[0]);
+  const [idCardNumber, setIdCardNumber] = useState(currentUser?.idCardNumber || '');
+  const [avatar, setAvatar] = useState(currentUser?.avatar || PRESET_AVATARS[0]);
 
   // Bank state
-  const [bankCode, setBankCode] = useState(currentUser.bankCode || currentUser.bankConfig?.bankCode || 'MB');
-  const [bankName, setBankName] = useState(currentUser.bankName || currentUser.bankConfig?.bankName || 'MB Bank');
-  const [accountNumber, setAccountNumber] = useState(currentUser.accountNumber || currentUser.bankConfig?.accountNumber || '');
-  const [accountName, setAccountName] = useState(currentUser.accountName || currentUser.bankConfig?.accountName || currentUser.name.toUpperCase());
+  const [bankCode, setBankCode] = useState(currentUser?.bankCode || currentUser?.bankConfig?.bankCode || 'MB');
+  const [bankName, setBankName] = useState(currentUser?.bankName || currentUser?.bankConfig?.bankName || 'MB Bank');
+  const [accountNumber, setAccountNumber] = useState(currentUser?.accountNumber || currentUser?.bankConfig?.accountNumber || '');
+  const [accountName, setAccountName] = useState(currentUser?.accountName || currentUser?.bankConfig?.accountName || currentUser?.name?.toUpperCase() || '');
   const [qrTemplate, setQrTemplate] = useState<string>('compact2');
 
   // Preference toggles
@@ -72,7 +72,7 @@ export const UserSettingsModal: React.FC<UserSettingsModalProps> = ({
 
   const [isSavedSuccess, setIsSavedSuccess] = useState(false);
 
-  if (!isOpen) return null;
+  if (!isOpen || !currentUser) return null;
 
   const handleSelectBank = (code: string, fullBankName: string) => {
     setBankCode(code);

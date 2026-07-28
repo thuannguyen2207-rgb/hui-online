@@ -388,9 +388,9 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
               >
                 <div className="space-y-0.5">
                   <div className="font-extrabold flex items-center space-x-1">
-                    <span>Cho Vay Ngang Hàng (P2P)</span>
+                    <span>Hũ Tích Lũy</span>
                   </div>
-                  <div className="text-[10px] text-slate-400">Cho phép hội viên vay / cấp vốn xoay vòng</div>
+                  <div className="text-[10px] text-slate-400">Cho phép hội viên tích lũy / vay vốn xoay vòng</div>
                 </div>
                 <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase shrink-0 ${
                   allowP2pLending ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500/30 text-rose-300'

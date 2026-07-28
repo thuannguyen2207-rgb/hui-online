@@ -467,7 +467,7 @@ export function App() {
       return day;
     }));
 
-    const featureName = feature === 'p2p' ? 'Cho Vay Ngang Hàng (P2P)' : 'Góp Hũ Tích Lũy Mãn Hạn';
+    const featureName = feature === 'p2p' ? 'Hũ Tích Lũy Xoay Vòng' : 'Góp Hũ Tích Lũy Mãn Hạn';
     const statusText = enabled ? 'MỞ MẠNG HOẠT ĐỘNG' : 'TẠM ĐÓNG';
 
     const chatMsg: ChatMessage = {
@@ -645,10 +645,11 @@ export function App() {
       const isDead = m.hasPayout && m.payoutRound !== null && m.payoutRound < activeHuiDay.currentRound;
       const amountDue = isDead ? activeHuiDay.shareAmount : (activeHuiDay.shareAmount - winningBidAmount);
       const refCode = `HUI ${activeHuiDay.inviteCode} K${activeHuiDay.currentRound} ${m.userName.toUpperCase().replace(/\s+/g, '')}`;
+      const activeBank = activeHuiDay?.bankConfig || { bankCode: 'MB', bankName: 'MB Bank', accountNumber: '', accountName: '' };
       const vietqrCodeUrl = generateVietQRUrl(
-        activeHuiDay.bankConfig.bankCode,
-        activeHuiDay.bankConfig.accountNumber,
-        activeHuiDay.bankConfig.accountName,
+        activeBank.bankCode || 'MB',
+        activeBank.accountNumber || '',
+        activeBank.accountName || '',
         amountDue,
         refCode
       );
@@ -829,7 +830,11 @@ export function App() {
         onChangeView={setActiveView}
         isMobileFrame={isMobileFrame}
         onToggleMobileFrame={() => setIsMobileFrame(!isMobileFrame)}
-        onOpenCreateModal={() => setIsCreateModalOpen(true)}
+        onOpenCreateModal={() => {
+          if (currentUser?.role === 'chu_hui') {
+            setIsCreateModalOpen(true);
+          }
+        }}
         onOpenExploreModal={() => setIsExploreModalOpen(true)}
         onOpenBankConfigModal={() => setIsBankConfigModalOpen(true)}
         onOpenUserSettingsModal={() => setIsUserSettingsModalOpen(true)}
@@ -1163,10 +1168,10 @@ export function App() {
         isOpen={!!activeVietQRTx}
         onClose={() => setActiveVietQRTx(null)}
         transaction={activeVietQRTx}
-        bankName={activeHuiDay.bankConfig.bankName}
-        bankCode={activeHuiDay.bankConfig.bankCode}
-        accountNumber={activeHuiDay.bankConfig.accountNumber}
-        accountName={activeHuiDay.bankConfig.accountName}
+        bankName={activeHuiDay?.bankConfig?.bankName || 'MB Bank'}
+        bankCode={activeHuiDay?.bankConfig?.bankCode || 'MB'}
+        accountNumber={activeHuiDay?.bankConfig?.accountNumber || ''}
+        accountName={activeHuiDay?.bankConfig?.accountName || ''}
         onConfirmPaid={handleConfirmPaid}
       />
 
