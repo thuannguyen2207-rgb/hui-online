@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
-import { MapPin, X, Check, Building2, ChevronRight, Sparkles, Navigation, Search } from 'lucide-react';
-import { VIETNAM_PROVINCES, POPULAR_STREETS, QUICK_PRESET_ADDRESSES } from '../data/addressData';
+import { MapPin, X, Check, Building2, ChevronRight, Sparkles, Navigation, Home, Building } from 'lucide-react';
+import { VIETNAM_PROVINCES, POPULAR_STREETS, POPULAR_BUILDINGS, QUICK_PRESET_ADDRESSES } from '../data/addressData';
 
 interface AddressPickerModalProps {
   isOpen: boolean;
@@ -15,11 +15,18 @@ export const AddressPickerModal: React.FC<AddressPickerModalProps> = ({
   onSelectAddress,
   currentAddress = ''
 }) => {
+  const [addressType, setAddressType] = useState<'nha_pho' | 'chung_cu'>('nha_pho');
   const [selectedProvince, setSelectedProvince] = useState(VIETNAM_PROVINCES[0].name);
   const [selectedDistrict, setSelectedDistrict] = useState(VIETNAM_PROVINCES[0].districts[0]?.name || '');
   const [selectedWard, setSelectedWard] = useState(VIETNAM_PROVINCES[0].districts[0]?.wards[0] || '');
+  
+  // House / Street
   const [houseNumber, setHouseNumber] = useState('123');
   const [streetName, setStreetName] = useState(POPULAR_STREETS[0]);
+
+  // Condo / Apartment / Building
+  const [apartmentUnit, setApartmentUnit] = useState('Căn hộ A-12.08');
+  const [buildingName, setBuildingName] = useState(POPULAR_BUILDINGS[0]);
 
   if (!isOpen) return null;
 
@@ -40,19 +47,30 @@ export const AddressPickerModal: React.FC<AddressPickerModalProps> = ({
     setSelectedWard(dist?.wards[0] || '');
   };
 
-  const handleConfirmCustom = () => {
-    const cleanNum = houseNumber.trim();
-    const cleanStreet = streetName.trim();
-    const streetPart = cleanNum ? `${cleanNum} ${cleanStreet}` : cleanStreet;
-    
+  const getFormattedAddress = () => {
+    let detailPart = '';
+    if (addressType === 'nha_pho') {
+      const cleanNum = houseNumber.trim();
+      const cleanStreet = streetName.trim();
+      detailPart = cleanNum ? `${cleanNum} ${cleanStreet}` : cleanStreet;
+    } else {
+      const cleanUnit = apartmentUnit.trim();
+      const cleanBldg = buildingName.trim();
+      detailPart = cleanUnit ? `${cleanUnit}, ${cleanBldg}` : cleanBldg;
+    }
+
     const parts = [
-      streetPart,
+      detailPart,
       selectedWard,
       selectedDistrict,
       selectedProvince
     ].filter(Boolean);
 
-    const full = parts.join(', ');
+    return parts.join(', ');
+  };
+
+  const handleConfirmCustom = () => {
+    const full = getFormattedAddress();
     onSelectAddress(full);
     onClose();
   };
@@ -73,8 +91,8 @@ export const AddressPickerModal: React.FC<AddressPickerModalProps> = ({
               <MapPin className="h-5 w-5" />
             </div>
             <div>
-              <h3 className="text-base font-extrabold text-white">Chọn Địa Chỉ Nhanh</h3>
-              <p className="text-xs text-slate-400">Chọn Tỉnh/Thành phố, Quận/Huyện, Phường/Xã & Đường</p>
+              <h3 className="text-base font-extrabold text-white">Chọn Địa Chỉ Thường Trú</h3>
+              <p className="text-xs text-slate-400">Gợi ý sẵn Tỉnh/TP, Quận/Huyện, Phường/Xã, Đường hoặc Chung Cư</p>
             </div>
           </div>
           <button
@@ -92,7 +110,7 @@ export const AddressPickerModal: React.FC<AddressPickerModalProps> = ({
           <div className="space-y-2">
             <div className="flex items-center space-x-1.5 text-amber-400 font-bold">
               <Sparkles className="h-3.5 w-3.5" />
-              <span>Gợi Ý Mẫu Địa Chỉ Phổ Biến (Nhấn để chọn ngay):</span>
+              <span>Mẫu Địa Chỉ Phổ Biến (Bấm chọn nhanh):</span>
             </div>
             <div className="flex flex-wrap gap-1.5">
               {QUICK_PRESET_ADDRESSES.map((preset, idx) => (
@@ -110,9 +128,38 @@ export const AddressPickerModal: React.FC<AddressPickerModalProps> = ({
           </div>
 
           <div className="border-t border-slate-800/80 pt-4 space-y-4">
+            
+            {/* Address Category Switcher: House vs Condo */}
+            <div className="flex bg-slate-950 p-1 rounded-2xl border border-slate-800">
+              <button
+                type="button"
+                onClick={() => setAddressType('nha_pho')}
+                className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition-all ${
+                  addressType === 'nha_pho'
+                    ? 'bg-amber-500 text-slate-950 shadow-md'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Home className="h-3.5 w-3.5" />
+                <span>Nhà Phố / Mặt Đường</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setAddressType('chung_cu')}
+                className={`flex-1 py-2 px-3 rounded-xl font-bold text-xs flex items-center justify-center space-x-1.5 transition-all ${
+                  addressType === 'chung_cu'
+                    ? 'bg-amber-500 text-slate-950 shadow-md'
+                    : 'text-slate-400 hover:text-white'
+                }`}
+              >
+                <Building className="h-3.5 w-3.5" />
+                <span>Chung Cư / Tòa Nhà</span>
+              </button>
+            </div>
+
             <h4 className="font-extrabold text-white text-sm flex items-center space-x-2">
               <Building2 className="h-4 w-4 text-emerald-400" />
-              <span>Chọn Theo Cấp Hành Chính Việt Nam</span>
+              <span>Chọn Cấp Hành Chính Việt Nam</span>
             </h4>
 
             {/* Step 1: Province / City */}
@@ -197,55 +244,90 @@ export const AddressPickerModal: React.FC<AddressPickerModalProps> = ({
               </div>
             )}
 
-            {/* Step 4: Street & House Number */}
-            <div className="space-y-2 pt-2 border-t border-slate-800/80">
-              <label className="block text-[11px] font-bold text-slate-400">
-                4. Số Nhà & Tên Đường:
-              </label>
-              
-              <div className="grid grid-cols-3 gap-2">
-                <input
-                  type="text"
-                  value={houseNumber}
-                  onChange={(e) => setHouseNumber(e.target.value)}
-                  placeholder="Số nhà (VD: 123)"
-                  className="bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none"
-                />
-                <input
-                  type="text"
-                  value={streetName}
-                  onChange={(e) => setStreetName(e.target.value)}
-                  placeholder="Tên đường"
-                  className="col-span-2 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3 py-2 text-white font-semibold text-xs focus:outline-none"
-                />
-              </div>
+            {/* Step 4: Specific Detail (House or Condo) */}
+            {addressType === 'nha_pho' ? (
+              <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                <label className="block text-[11px] font-bold text-slate-400">
+                  4. Số Nhà & Tên Đường:
+                </label>
+                
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    value={houseNumber}
+                    onChange={(e) => setHouseNumber(e.target.value)}
+                    placeholder="Số nhà (VD: 123)"
+                    className="bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3 py-2 text-white font-mono text-xs focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={streetName}
+                    onChange={(e) => setStreetName(e.target.value)}
+                    placeholder="Tên đường"
+                    className="col-span-2 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3 py-2 text-white font-semibold text-xs focus:outline-none"
+                  />
+                </div>
 
-              {/* Quick Street suggestion pills */}
-              <div className="flex flex-wrap gap-1 pt-1">
-                <span className="text-[10px] text-slate-500 self-center mr-1">Gợi ý đường:</span>
-                {POPULAR_STREETS.slice(0, 6).map((st) => (
-                  <button
-                    key={st}
-                    type="button"
-                    onClick={() => setStreetName(st)}
-                    className="px-2 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-[10px] text-amber-400 transition-all"
-                  >
-                    {st}
-                  </button>
-                ))}
+                {/* Quick Street suggestion pills */}
+                <div className="flex flex-wrap gap-1 pt-1">
+                  <span className="text-[10px] text-slate-500 self-center mr-1">Gợi ý đường:</span>
+                  {POPULAR_STREETS.slice(0, 6).map((st) => (
+                    <button
+                      key={st}
+                      type="button"
+                      onClick={() => setStreetName(st)}
+                      className="px-2 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-[10px] text-amber-400 transition-all"
+                    >
+                      {st}
+                    </button>
+                  ))}
+                </div>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-2 pt-2 border-t border-slate-800/80">
+                <label className="block text-[11px] font-bold text-slate-400">
+                  4. Số Căn Hộ & Tên Chung Cư / Tòa Nhà:
+                </label>
+                
+                <div className="grid grid-cols-3 gap-2">
+                  <input
+                    type="text"
+                    value={apartmentUnit}
+                    onChange={(e) => setApartmentUnit(e.target.value)}
+                    placeholder="VD: Căn 12.08 Tháp A"
+                    className="bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3 py-2 text-white font-semibold text-xs focus:outline-none"
+                  />
+                  <input
+                    type="text"
+                    value={buildingName}
+                    onChange={(e) => setBuildingName(e.target.value)}
+                    placeholder="Tên chung cư / tòa nhà"
+                    className="col-span-2 bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl px-3 py-2 text-white font-semibold text-xs focus:outline-none"
+                  />
+                </div>
+
+                {/* Quick Building suggestion pills */}
+                <div className="flex flex-wrap gap-1 pt-1">
+                  <span className="text-[10px] text-slate-500 self-center mr-1">Gợi ý chung cư:</span>
+                  {POPULAR_BUILDINGS.map((bldg) => (
+                    <button
+                      key={bldg}
+                      type="button"
+                      onClick={() => setBuildingName(bldg)}
+                      className="px-2 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-lg text-[10px] text-amber-400 transition-all"
+                    >
+                      {bldg.replace('Chung cư ', '')}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
 
             {/* Formatted Preview */}
             <div className="p-3 bg-slate-950 border border-amber-500/30 rounded-2xl space-y-1">
               <span className="text-[10px] text-amber-400 uppercase font-bold tracking-wider">Xem Trước Địa Chỉ Hoàn Chỉnh:</span>
               <p className="text-white font-bold text-xs leading-relaxed">
-                {[
-                  houseNumber.trim() ? `${houseNumber.trim()} ${streetName.trim()}` : streetName.trim(),
-                  selectedWard,
-                  selectedDistrict,
-                  selectedProvince
-                ].filter(Boolean).join(', ')}
+                {getFormattedAddress()}
               </p>
             </div>
 

@@ -150,10 +150,24 @@ export const VIETNAM_PROVINCES: CityData[] = [
   }
 ];
 
+export const POPULAR_BUILDINGS = [
+  'Chung cư Vinhomes Central Park',
+  'Chung cư Masteri Thảo Điền',
+  'Chung cư Sunrise City',
+  'Chung cư Goldmark City',
+  'Chung cư Royal City',
+  'Chung cư Times City',
+  'Chung cư The Sun Avenue',
+  'Chung cư Imperia An Phú',
+  'Chung cư Scenic Valley',
+  'Chung cư Feliz En Vista'
+];
+
 export const QUICK_PRESET_ADDRESSES = [
   '123 Nguyễn Trãi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh',
+  'Căn hộ A-12.08, Chung cư Vinhomes Central Park, Phường 22, Quận Bình Thạnh, TP. Hồ Chí Minh',
+  'Căn hộ B-0502, Chung cư Sunrise City, Phường Tân Phong, Quận 7, TP. Hồ Chí Minh',
   '456 Lê Văn Sỹ, Phường 12, Quận 3, TP. Hồ Chí Minh',
   '88 Đường Cách Mạng Tháng 8, Phường 6, Quận 3, TP. Hồ Chí Minh',
-  '12 Đường Nguyễn Huệ, Phường Bến Nghé, Quận 1, TP. Hồ Chí Minh',
   '79 Đường Dịch Vọng Hậu, Quận Cầu Giấy, TP. Hà Nội'
 ];
