@@ -92,7 +92,7 @@ export const ElectronicContractModal: React.FC<ElectronicContractModalProps> = (
               <span>ĐƠN VỊ CUNG CẤP DỊCH VỤ: BÊN THỨ BA (THIRD-PARTY PROVIDER)</span>
             </div>
             <p className="text-slate-300 leading-relaxed">
-              Tất cả các dịch vụ tài chính hũ tích lũy xoay vòng, tài trợ vốn, hũ tiết kiệm tích lũy và quản lý dòng tiền mãn hạn đều được <strong>trực tiếp cung cấp, vận hành và quản lý số dư bởi: <span className="text-amber-300 font-bold">{partnerName}</span></strong>. Hệ thống Hụi Online giữ vai trò cổng kết nối hạ tầng công nghệ và giao diện hiển thị.
+              Tất cả các dịch vụ tài chính hũ tích lũy xoay vòng, tài trợ vốn, hũ tiết kiệm tích lũy và quản lý dòng tiền tích lũy đều được <strong>trực tiếp cung cấp, vận hành và quản lý số dư bởi: <span className="text-amber-300 font-bold">{partnerName}</span></strong>. Hệ thống Hụi Online giữ vai trò cổng kết nối hạ tầng công nghệ và giao diện hiển thị.
             </p>
           </div>
         </div>
@@ -135,8 +135,8 @@ export const ElectronicContractModal: React.FC<ElectronicContractModalProps> = (
             </p>
 
             <p>
-              <strong>ĐIỀU 2: ĐIỀU KHOẢN KHÓA VỐN TÍCH LŨY VÀ TÍNH NĂNG MÃN HẠN</strong><br />
-              2.1. Đối với Hũ Tích Lũy Mãn Hạn: Người tham gia cam kết nộp đúng số tiền định kỳ theo từng kỳ quy định. Khoản tiền đã tích lũy và tiền lãi thưởng <strong>chỉ được quyền rút ra khi hoàn thành đủ số kỳ mục tiêu hoặc đến ngày mãn hạn chính thức</strong>.<br />
+              <strong>ĐIỀU 2: ĐIỀU KHOẢN KHÓA VỐN TÍCH LŨY VÀ TÍNH NĂNG TÍCH LŨY</strong><br />
+              2.1. Đối với Hũ Tích Lũy Định Kỳ: Người tham gia cam kết nộp đúng số tiền định kỳ theo từng kỳ quy định. Khoản tiền đã tích lũy và tiền lãi thưởng <strong>chỉ được quyền rút ra khi hoàn thành đủ số kỳ mục tiêu hoặc đến thời điểm rút tiền chính thức</strong>.<br />
               2.2. Trường hợp rút trước hạn không hợp lệ, khoản lãi thưởng sẽ bị hủy bỏ và bên thứ ba có quyền giữ tài sản theo quy tắc thỏa thuận bảo an.
             </p>
 
@@ -184,7 +184,7 @@ export const ElectronicContractModal: React.FC<ElectronicContractModalProps> = (
                 {check2 ? <CheckSquare className="h-5 w-5" /> : <Square className="h-5 w-5 text-slate-600" />}
               </div>
               <span className="text-slate-200">
-                Tôi hiểu rõ và đồng ý rằng <strong>tất cả dịch vụ hũ tích lũy xoay vòng và tiết kiệm/tích lũy hụi mãn hạn đều do Bên Thứ Ba (Đối Tác Tín Dụng & Ngân Hàng)</strong> cung cấp.
+                Tôi hiểu rõ và đồng ý rằng <strong>tất cả dịch vụ hũ tích lũy xoay vòng và hũ tích lũy định kỳ đều do Bên Thứ Ba (Đối Tác Tín Dụng & Ngân Hàng)</strong> cung cấp.
               </span>
             </div>
 

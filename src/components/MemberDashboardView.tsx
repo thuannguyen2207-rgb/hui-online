@@ -242,7 +242,7 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
               className="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 shadow-md flex items-center space-x-1.5 transition-all shrink-0 active:scale-95"
             >
               <Landmark className="h-4 w-4 text-emerald-400" />
-              <span>🏦 VAY P2P & HŨ MÃN HẠN</span>
+              <span>🏦 DỊCH VỤ HŨ TÍCH LŨY</span>
             </button>
           )}
 

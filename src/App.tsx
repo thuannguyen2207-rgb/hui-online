@@ -467,7 +467,7 @@ export function App() {
       return day;
     }));
 
-    const featureName = feature === 'p2p' ? 'Hũ Tích Lũy Xoay Vòng' : 'Góp Hũ Tích Lũy Mãn Hạn';
+    const featureName = feature === 'p2p' ? 'Hũ Tích Lũy Xoay Vòng' : 'Hũ Tích Lũy Định Kỳ';
     const statusText = enabled ? 'MỞ MẠNG HOẠT ĐỘNG' : 'TẠM ĐÓNG';
 
     const chatMsg: ChatMessage = {
@@ -867,7 +867,11 @@ export function App() {
             {huiDays.length === 0 || !activeHuiDay ? (
               <EmptyHuiState
                 currentUser={currentUser}
-                onCreateHuiClick={() => setIsCreateModalOpen(true)}
+                onCreateHuiClick={() => {
+                  if (currentUser.role === 'chu_hui') {
+                    setIsCreateModalOpen(true);
+                  }
+                }}
                 onExploreHuiClick={() => setIsExploreModalOpen(true)}
               />
             ) : (

@@ -256,11 +256,11 @@ export const Navbar: React.FC<NavbarProps> = ({
               <button
                 onClick={onOpenExtendedServicesModal}
                 className="bg-emerald-950/90 hover:bg-emerald-900 text-emerald-400 border border-emerald-500/40 font-extrabold px-3 py-1.5 rounded-xl flex items-center space-x-1.5 transition-all active:scale-95"
-                title="Dịch vụ cho vay P2P & Hũ tích lũy mãn hạn"
+                title="Dịch vụ Hũ Tích Lũy Tài Chính"
               >
                 <Landmark className="h-3.5 w-3.5 text-emerald-400" />
-                <span className="hidden sm:inline">P2P & Hũ Mãn Hạn</span>
-                <span className="sm:hidden">P2P</span>
+                <span className="hidden sm:inline">Hũ Tích Lũy</span>
+                <span className="sm:hidden">Hũ Tích Lũy</span>
               </button>
             )}
 

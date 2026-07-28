@@ -51,6 +51,26 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
 
   if (!isOpen) return null;
 
+  if (currentUser.role !== 'chu_hui') {
+    return (
+      <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm animate-fade-in">
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl text-center space-y-4">
+          <ShieldAlert className="h-12 w-12 text-rose-500 mx-auto" />
+          <h3 className="text-lg font-extrabold text-white">Quyền Hạn Không Hợp Lệ</h3>
+          <p className="text-xs text-slate-300">
+            Bạn đang đăng nhập với tài khoản <strong className="text-amber-400">Hội Viên</strong>. Chỉ có tài khoản <strong className="text-emerald-400">Chủ Hụi</strong> mới được phép tạo dây hụi mới.
+          </p>
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl"
+          >
+            Đóng Lại
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -371,7 +391,7 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
             <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center justify-between">
               <span className="flex items-center space-x-1.5">
                 <Sparkles className="h-4 w-4 text-amber-400" />
-                <span>Quyền Đóng / Mở Chức Năng Cho Vay & Góp Tích Lũy</span>
+                <span>Quyền Đóng / Mở Các Chức Năng Hũ Tích Lũy</span>
               </span>
               <span className="text-[10px] text-amber-300 font-normal">Do Chủ Hụi quyết định</span>
             </h4>
@@ -388,7 +408,7 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
               >
                 <div className="space-y-0.5">
                   <div className="font-extrabold flex items-center space-x-1">
-                    <span>Hũ Tích Lũy</span>
+                    <span>Hũ Tích Lũy Xoay Vòng</span>
                   </div>
                   <div className="text-[10px] text-slate-400">Cho phép hội viên tích lũy / vay vốn xoay vòng</div>
                 </div>
@@ -410,7 +430,7 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
               >
                 <div className="space-y-0.5">
                   <div className="font-extrabold flex items-center space-x-1">
-                    <span>Hũ Tích Lũy Mãn Hạn (Góp)</span>
+                    <span>Hũ Tích Lũy Định Kỳ (Góp)</span>
                   </div>
                   <div className="text-[10px] text-slate-400">Tích lũy góp tiền định kỳ khóa vốn</div>
                 </div>

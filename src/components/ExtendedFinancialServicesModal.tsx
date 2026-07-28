@@ -78,7 +78,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
 
   // New Vault Form State
   const [selectedHuiDayId, setSelectedHuiDayId] = useState(huiDays[0]?.id || '');
-  const [vaultName, setVaultName] = useState('Hũ Tích Lũy Mãn Hạn Dây Hụi');
+  const [vaultName, setVaultName] = useState('Hũ Tích Lũy Định Kỳ Dây Hụi');
   const [targetCycles, setTargetCycles] = useState(12);
   const [amountPerCycle, setAmountPerCycle] = useState(1000000);
   const [bonusRate, setBonusRate] = useState(8.5); // 8.5%/năm
@@ -123,10 +123,10 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
 
     setPendingContract({
       context: {
-        title: 'HỢP ĐỒNG ĐIỆN TỬ KHÓA VỐN TÍCH LŨY MÃN HẠN HỤI',
+        title: 'HỢP ĐỒNG ĐIỆN TỬ KHÓA VỐN TÍCH LŨY DÂY HỤI',
         actionType: 'vault_create',
         partnerName: 'Liên Minh Quỹ Tín Dụng & Ngân Hàng Tích Lũy Lộc Phát (Bên Thứ Ba)',
-        summaryText: `Khởi tạo Hũ Tích Lũy '${vaultName}' - Cam kết đóng đủ ${targetCycles} kỳ x ${amountPerCycle.toLocaleString('vi-VN')} đ/kỳ. Rút tiền khi hoàn thành mãn hạn!`,
+        summaryText: `Khởi tạo Hũ Tích Lũy '${vaultName}' - Cam kết đóng đủ ${targetCycles} kỳ x ${amountPerCycle.toLocaleString('vi-VN')} đ/kỳ. Rút tiền khi hoàn thành đủ kỳ!`,
         amount: totalEst,
       },
       onConfirm: () => {
@@ -180,7 +180,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                 <span className="text-xs text-slate-400 font-mono">Bảo mật & Tín nhiệm Hụi</span>
               </div>
               <h2 className="text-2xl sm:text-3xl font-black text-white tracking-tight mt-0.5">
-                DỊCH VỤ TÀI CHÍNH & TÍCH LŨY MÃN HẠN
+                DỊCH VỤ HŨ TÍCH LŨY TÀI CHÍNH
               </h2>
             </div>
           </div>
@@ -231,7 +231,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                   : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
               }`}>
                 <div>
-                  <span className="font-extrabold block text-white">2. Góp Hũ Tích Lũy Mãn Hạn</span>
+                  <span className="font-extrabold block text-white">2. Hũ Tích Lũy Định Kỳ</span>
                   <span className="text-[10px] text-slate-400">Trạng thái: {activeHuiDay?.allowMaturityVault !== false ? '🟢 Đang Mở' : '🔴 Đã Đóng'}</span>
                 </div>
                 {onToggleHuiFeature && activeHuiDay && (
@@ -260,7 +260,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
             }`}
           >
             <Vault className="h-5 w-5" />
-            <span>HŨ GÓP HỤI MÃN HẠN (KHÓA ĐÚNG KỲ)</span>
+            <span>HŨ TÍCH LŨY ĐỊNH KỲ</span>
             <span className="bg-slate-950/30 text-[10px] px-2 py-0.5 rounded-full text-slate-950 font-black">
               {myVaults.length}
             </span>
@@ -275,7 +275,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
             }`}
           >
             <HandCoins className="h-5 w-5" />
-            <span>HŨ TÍCH LŨY</span>
+            <span>HŨ TÍCH LŨY XOAY VỒNG</span>
             <span className="bg-slate-950/30 text-[10px] px-2 py-0.5 rounded-full text-slate-950 font-black">
               {openP2PLoans.length}
             </span>
@@ -291,10 +291,10 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
               <ShieldCheck className="h-6 w-6 text-emerald-400 shrink-0 mt-0.5" />
               <div className="space-y-1 text-xs sm:text-sm text-slate-200">
                 <h4 className="font-extrabold text-emerald-400 text-base uppercase">
-                  QUY TẮC KHÓA VỐN: GÓP HỤI ĐÚNG KỲ MỚI NHẬN TIỀN RÚT MÃN HẠN
+                  QUY TẮC KHÓA VỐN: TÍCH LŨY ĐÚNG KỲ ĐỂ NHẬN ĐỦ CẢ GỐC VÀ LÃI THƯỞNG
                 </h4>
                 <p className="text-slate-300 leading-relaxed">
-                  Mỗi kỳ đến hạn, hội viên cần nộp số tiền cố định vào <strong>Hũ Tích Lũy</strong>. Số tiền tích lũy và khoản lãi thưởng (<strong className="text-emerald-300">8.5%/năm</strong>) sẽ <strong>hoàn toàn bị khóa</strong> cho đến khi hoàn thành đủ tổng số kỳ mục tiêu hoặc đến ngày mãn hạn hụi!
+                  Mỗi kỳ đến hạn, hội viên cần nộp số tiền cố định vào <strong>Hũ Tích Lũy</strong>. Số tiền tích lũy và khoản lãi thưởng (<strong className="text-emerald-300">8.5%/năm</strong>) sẽ <strong>hoàn toàn bị khóa</strong> cho đến khi hoàn thành đủ tổng số kỳ mục tiêu hoặc đến thời điểm rút tiền!
                 </p>
               </div>
             </div>
@@ -305,7 +305,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                 <Lock className="h-5 w-5 text-rose-400 shrink-0 mt-0.5" />
                 <div className="space-y-0.5 text-xs">
                   <h4 className="font-extrabold text-rose-200 uppercase">
-                    CHỨC NĂNG GÓP HŨ TÍCH LŨY ĐANG TẠM ĐÓNG BỞI CHỦ HỤI
+                    CHỨC NĂNG HŨ TÍCH LŨY ĐỊNH KỲ ĐANG TẠM ĐÓNG BỞI CHỦ HỤI
                   </h4>
                   <p className="text-rose-300/90">
                     Chủ Hụi đã tạm đóng việc đăng ký hũ tích lũy mới cho dây hụi này. Các hũ tiết kiệm đã tạo trước đó vẫn tiếp tục duy trì nộp tiền bình thường.
@@ -318,7 +318,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-black text-white flex items-center space-x-2">
                 <Coins className="h-5 w-5 text-emerald-400" />
-                <span>Danh Sách Hũ Tiết Kiệm Mãn Hạn Của Bạn ({myVaults.length})</span>
+                <span>Danh Sách Hũ Tích Lũy Định Kỳ Của Bạn ({myVaults.length})</span>
               </h3>
 
               {activeHuiDay?.allowMaturityVault === false ? (
@@ -346,7 +346,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                 <div className="border-b border-slate-800 pb-3 flex items-center justify-between">
                   <h4 className="font-extrabold text-emerald-400 text-sm flex items-center space-x-2 uppercase">
                     <Vault className="h-4 w-4" />
-                    <span>Thiết Lập Hũ Tích Lũy Mãn Hạn Mới</span>
+                    <span>Thiết Lập Hũ Tích Lũy Định Kỳ Mới</span>
                   </h4>
                   <button type="button" onClick={() => setShowCreateVaultForm(false)} className="text-slate-400 hover:text-white">
                     <X className="h-5 w-5" />
@@ -362,7 +362,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                         setSelectedHuiDayId(e.target.value);
                         const matched = huiDays.find(h => h.id === e.target.value);
                         if (matched) {
-                          setVaultName(`Hũ Tích Lũy Mãn Hạn - ${matched.name}`);
+                          setVaultName(`Hũ Tích Lũy Định Kỳ - ${matched.name}`);
                           setTargetCycles(matched.totalShares);
                         }
                       }}
@@ -422,7 +422,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                     <strong className="text-white">{(amountPerCycle * targetCycles).toLocaleString('vi-VN')} đ</strong>
                   </div>
                   <div>
-                    <span className="text-slate-400">Lãi Thưởng Mãn Hạn (+{bonusRate}%/năm): </span>
+                    <span className="text-slate-400">Lãi Thưởng Tích Lũy (+{bonusRate}%/năm): </span>
                     <strong className="text-emerald-400">
                       +{Math.round((amountPerCycle * targetCycles * bonusRate * (targetCycles / 12)) / 100).toLocaleString('vi-VN')} đ
                     </strong>
@@ -434,7 +434,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                   className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 text-slate-950 font-black text-xs rounded-xl shadow-lg flex items-center justify-center space-x-2"
                 >
                   <Vault className="h-4 w-4" />
-                  <span>XÁC NHẬN MỞ HŨ TÍCH LŨY MÃN HẠN</span>
+                  <span>XÁC NHẬN MỞ HŨ TÍCH LŨY ĐỊNH KỲ</span>
                 </button>
               </form>
             )}
@@ -443,9 +443,9 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
             {myVaults.length === 0 ? (
               <div className="text-center py-12 bg-slate-950/60 border border-slate-800 rounded-3xl space-y-3">
                 <Vault className="h-12 w-12 mx-auto text-slate-600" />
-                <p className="text-slate-300 font-bold text-sm">Bạn chưa có Hũ Tích Lũy Mãn Hạn nào.</p>
+                <p className="text-slate-300 font-bold text-sm">Bạn chưa có Hũ Tích Lũy Định Kỳ nào.</p>
                 <p className="text-slate-500 text-xs max-w-md mx-auto">
-                  Tạo hũ tích lũy ngay để khóa kỷ luật đóng hụi hàng kỳ và nhận khoản tiền mãn hạn lớn kèm lãi thưởng hấp dẫn!
+                  Tạo hũ tích lũy ngay để rèn luyện kỷ luật đóng hụi hàng kỳ và nhận khoản tiền tích lũy kèm lãi thưởng hấp dẫn!
                 </p>
               </div>
             ) : (
@@ -481,7 +481,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                             ? 'bg-emerald-500/20 text-emerald-300 border-emerald-500/50 animate-pulse'
                             : 'bg-amber-500/20 text-amber-300 border-amber-500/40'
                         }`}>
-                          {isMatured ? '🎉 ĐÃ MÃN HẠN (RÚT TIỀN)' : `ĐANG TÍCH LŨY (${vault.completedCycles}/${vault.targetCycles} KỲ)`}
+                          {isMatured ? '🎉 ĐÃ ĐẠT MỤC TIÊU (RÚT TIỀN)' : `ĐANG TÍCH LŨY (${vault.completedCycles}/${vault.targetCycles} KỲ)`}
                         </span>
                       </div>
 
@@ -510,11 +510,11 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                           <strong className="text-emerald-400 text-sm font-extrabold">{totalAccumulated.toLocaleString('vi-VN')} đ</strong>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[10px]">Lãi Thưởng Mãn Hạn:</span>
+                          <span className="text-slate-400 block text-[10px]">Lãi Thưởng Tích Lũy:</span>
                           <strong className="text-amber-400 text-xs">+{estimatedInterest.toLocaleString('vi-VN')} đ</strong>
                         </div>
                         <div>
-                          <span className="text-slate-400 block text-[10px]">Ngày Mãn Hạn Expected:</span>
+                          <span className="text-slate-400 block text-[10px]">Ngày Hoàn Thành Dự Kiến:</span>
                           <span className="text-slate-300 text-xs font-sans font-bold">
                             {new Date(vault.maturityDate).toLocaleDateString('vi-VN')}
                           </span>
@@ -526,7 +526,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                         {vault.status === 'withdrawn' ? (
                           <div className="p-3 bg-slate-900 border border-slate-800 rounded-2xl text-center text-slate-400 text-xs font-bold flex items-center justify-center space-x-1.5">
                             <CheckCircle2 className="h-4 w-4 text-emerald-400" />
-                            <span>Đã Rút Tiền Mãn Hạn Thành Công</span>
+                            <span>Đã Rút Tiền Tích Lũy Thành Công</span>
                           </div>
                         ) : isMatured ? (
                           <button
@@ -534,7 +534,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                               const totalVal = totalAccumulated + estimatedInterest;
                               setPendingContract({
                                 context: {
-                                  title: 'HỢP ĐỒNG GIẢI NGÂN VỐN MÃN HẠN TÍCH LŨY',
+                                  title: 'HỢP ĐỒNG GIẢI NGÂN VỐN HŨ TÍCH LŨY',
                                   actionType: 'vault_withdraw',
                                   partnerName: 'Ngân Hàng & Đơn Vị Tín Dụng Bảo An Giải Ngân (Bên Thứ Ba)',
                                   summaryText: `Tất toán & rút toàn bộ vốn tích lũy kèm lãi thưởng của ${vault.vaultName}`,
@@ -546,7 +546,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                             className="w-full py-3 bg-gradient-to-r from-emerald-500 via-teal-400 to-emerald-500 text-slate-950 font-black text-xs rounded-xl shadow-xl shadow-emerald-500/20 flex items-center justify-center space-x-2 transition-transform active:scale-95"
                           >
                             <Sparkles className="h-4 w-4 text-slate-950" />
-                            <span>RÚT TỔNG TIỀN MÃN HẠN + LÃI THƯỞNG ({ (totalAccumulated + estimatedInterest).toLocaleString('vi-VN') } đ)</span>
+                            <span>RÚT TỔNG TIỀN TÍCH LŨY + LÃI THƯỞNG ({ (totalAccumulated + estimatedInterest).toLocaleString('vi-VN') } đ)</span>
                           </button>
                         ) : (
                           <div className="space-y-2">
@@ -554,7 +554,7 @@ export const ExtendedFinancialServicesModal: React.FC<ExtendedFinancialServicesM
                               onClick={() => {
                                 setPendingContract({
                                   context: {
-                                    title: 'HỢP ĐỒNG TÍCH LŨY KỲ HỤI MÃN HẠN',
+                                    title: 'HỢP ĐỒNG TÍCH LŨY ĐỊNH KỲ DÂY HỤI',
                                     actionType: 'vault_deposit',
                                     partnerName: 'Quỹ Tín Dụng & Ngân Hàng Tích Lũy Lộc Phát (Bên Thứ Ba)',
                                     summaryText: `Nộp tiền tích lũy kỳ ${vault.completedCycles + 1} cho ${vault.vaultName}`,

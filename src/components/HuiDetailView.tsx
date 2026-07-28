@@ -266,7 +266,7 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
               className="px-4 py-2 rounded-xl text-xs font-extrabold bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 shadow-md flex items-center space-x-1.5 transition-all shrink-0 active:scale-95"
             >
               <Landmark className="h-4 w-4 text-emerald-400" />
-              <span>🏦 HŨ TÍCH LŨY & HŨ MÃN HẠN</span>
+              <span>🏦 DỊCH VỤ HŨ TÍCH LŨY</span>
             </button>
           )}
 
@@ -758,7 +758,7 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
                   <span>Cấu Hình Bật / Tắt Chức Năng Tài Chính Mở Rộng</span>
                 </h4>
                 <p className="text-xs text-slate-400">
-                  Chủ Hụi có toàn quyền ĐÓNG hoặc MỞ dịch vụ Cho Vay Ngang Hàng & Góp Hũ Tích Lũy Mãn Hạn cho dây hụi này.
+                  Chủ Hụi có toàn quyền ĐÓNG hoặc MỞ dịch vụ Hũ Tích Lũy Xoay Vòng & Hũ Tích Lũy Định Kỳ cho dây hụi này.
                 </p>
               </div>
 
@@ -787,8 +787,8 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
                   </div>
                   <p className="text-xs text-slate-400">
                     {huiDay.allowP2pLending !== false 
-                      ? 'Hội viên trong dây hụi được phép đăng bài vay / cấp vốn tín nhiệm cho nhau.'
-                      : 'Chức năng cho vay đã bị Chủ Hụi đóng. Hội viên không thể đăng yêu cầu vay mới.'}
+                      ? 'Hội viên trong dây hụi được phép đăng bài tích lũy xoay vòng / tài trợ vốn tín nhiệm cho nhau.'
+                      : 'Chức năng hũ tích lũy xoay vòng đã bị Chủ Hụi đóng. Hội viên không thể đăng yêu cầu mới.'}
                   </p>
                 </div>
 
@@ -814,7 +814,7 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
               }`}>
                 <div className="space-y-1">
                   <div className="flex items-center space-x-2">
-                    <span className="font-bold text-sm text-white">2. Góp Hũ Tích Lũy Mãn Hạn</span>
+                    <span className="font-bold text-sm text-white">2. Hũ Tích Lũy Định Kỳ</span>
                     <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
                       huiDay.allowMaturityVault !== false ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
                     }`}>
@@ -823,7 +823,7 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
                   </div>
                   <p className="text-xs text-slate-400">
                     {huiDay.allowMaturityVault !== false 
-                      ? 'Hội viên được phép đăng ký góp hũ tiết kiệm mãn hạn dây hụi để hưởng lãi thưởng.'
+                      ? 'Hội viên được phép đăng ký hũ tích lũy định kỳ dây hụi để hưởng lãi thưởng.'
                       : 'Chức năng hũ tích lũy đã bị Chủ Hụi đóng. Hội viên không thể mở hũ tích lũy mới.'}
                   </p>
                 </div>
