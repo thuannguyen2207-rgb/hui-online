@@ -35,6 +35,10 @@ import { PendingUsersApprovalModal } from './components/PendingUsersApprovalModa
 import { PlusCircle, ShieldCheck, UserCheck, Coins, Sparkles, ChevronRight, ChevronLeft, Layers, Sliders } from 'lucide-react';
 
 export function App() {
+  const inviteCode = typeof window === 'undefined'
+    ? null
+    : new URLSearchParams(window.location.search).get('invite');
+
   // Navigation & View State
   const [activeView, setActiveView] = useState<'app' | 'calc' | 'db' | 'api'>('app');
   const [isMobileFrame, setIsMobileFrame] = useState(false);
@@ -863,7 +867,11 @@ export function App() {
       {/* Main Content Area */}
       <main className="flex-1">
         {!currentUser ? (
-          <LoginScreen onLoginSuccess={handleLoginOrRegisterSuccess} />
+          <LoginScreen
+            onLoginSuccess={handleLoginOrRegisterSuccess}
+            initialAuthTab={inviteCode ? 'register' : 'login'}
+            inviteCode={inviteCode || undefined}
+          />
         ) : (currentUser.accountApprovalStatus === 'pending_approval' || currentUser.accountApprovalStatus === 'rejected') ? (
           <PendingApprovalScreen
             currentUser={currentUser}
