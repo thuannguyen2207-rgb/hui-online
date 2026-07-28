@@ -144,6 +144,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 
     setLoading(true);
     try {
+      if (isForRegister && !trimmed.includes('@')) {
+        // Phone registration uses an internal Email Auth identity; it never invokes
+        // Supabase Phone Auth or requires an SMS provider.
+        setIsRegisterOtpSent(true);
+        setSuccessMsg('Sẵn sàng tạo tài khoản bằng số điện thoại. Nhập 123456 để xác nhận.');
+        return;
+      }
+
       if (trimmed.includes('@')) {
         // Supabase Email OTP
         const { error } = await supabase.auth.signInWithOtp({
@@ -270,12 +278,37 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       return;
     }
 
+    const phone = regPhone.replace(/\D/g, '');
+    const authEmail = phone ? `${phone}@tingbooks.net` : regEmail.trim().toLowerCase();
+    if (!authEmail) {
+      setErrorMsg('Vui lòng nhập số điện thoại hoặc Email để tạo tài khoản.');
+      return;
+    }
+    if (phone && registerOtpCode !== '123456') {
+      setErrorMsg('Mã xác nhận không đúng. Vui lòng nhập 123456.');
+      return;
+    }
+
     setLoading(true);
     try {
+      const { data, error } = await supabase.auth.signUp({
+        email: authEmail,
+        password: regPassword,
+        options: {
+          data: {
+            name: regName.trim(),
+            phone: phone || undefined,
+          },
+        },
+      });
+      if (error || !data.user) {
+        throw new Error(error?.message || 'Không thể tạo tài khoản xác thực.');
+      }
+
       const newUser: User = {
-        id: `u_reg_${Date.now()}`,
-        phone: regPhone.trim() || '0908889999',
-        email: regEmail.trim() || `${regPhone}@gmail.com`,
+        id: data.user.id,
+        phone: phone || '0908889999',
+        email: authEmail,
         name: regName.trim(),
         role: 'hui_vien',
         address: regAddress.trim(),
@@ -298,7 +331,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
       setTimeout(() => onLoginSuccess(newUser), 400);
     } catch (err) {
       console.error('Register error:', err);
-      setErrorMsg('Đã xảy ra lỗi khi tạo tài khoản trên Supabase. Vui lòng thử lại.');
+      setErrorMsg(err instanceof Error ? err.message : 'Đã xảy ra lỗi khi tạo tài khoản trên Supabase. Vui lòng thử lại.');
     } finally {
       setLoading(false);
     }
@@ -626,7 +659,9 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                     <MessageSquareCode className="h-6 w-6 text-amber-400 mx-auto" />
                     <h3 className="text-sm font-extrabold text-white">XÁC MINH MÃ OTP DÀNH CHO TÀI KHOẢN MỚI</h3>
                     <p className="text-xs text-slate-300">
-                      Hệ thống đã gửi mã xác minh 6 số đến: <strong className="text-amber-400 font-mono">{regPhone || regEmail}</strong>
+                      {regPhone
+                        ? <>Xác nhận đăng ký bằng SĐT: <strong className="text-amber-400 font-mono">{regPhone}</strong></>
+                        : <>Hệ thống đã gửi mã xác minh 6 số đến: <strong className="text-amber-400 font-mono">{regEmail}</strong></>}
                     </p>
                   </div>
 
@@ -676,7 +711,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
                       onClick={() => handleSendOtp(regPhone || regEmail, true)}
                       className="hover:text-emerald-400 underline"
                     >
-                      Gửi lại mã OTP
+                      {regPhone ? 'Tạo lại xác nhận' : 'Gửi lại mã OTP'}
                     </button>
                   </div>
                 </form>
