@@ -31,10 +31,16 @@ import {
 
 interface LoginScreenProps {
   onLoginSuccess: (user: User) => void;
+  initialAuthTab?: 'login' | 'register';
+  inviteCode?: string;
 }
 
-export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
-  const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
+export const LoginScreen: React.FC<LoginScreenProps> = ({
+  onLoginSuccess,
+  initialAuthTab = 'login',
+  inviteCode,
+}) => {
+  const [authTab, setAuthTab] = useState<'login' | 'register'>(initialAuthTab);
   // Login State
   const [loginIdentifier, setLoginIdentifier] = useState('0908123456');
   const [loginPassword, setLoginPassword] = useState('123456');
@@ -365,6 +371,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
               <span>Đăng Ký Mới</span>
             </button>
           </div>
+
+          {inviteCode && (
+            <div className="rounded-xl border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-center text-xs text-amber-200">
+              Bạn được mời tham gia dây hụi <span className="font-mono font-bold">{inviteCode}</span>. Hãy đăng ký để chờ Chủ Hụi phê duyệt.
+            </div>
+          )}
 
           {/* Feedback Banners */}
           {errorMsg && (

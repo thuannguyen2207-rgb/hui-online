@@ -37,22 +37,36 @@ export class ErrorBoundary extends Component<Props, State> {
     }
   }
 
+  private redirectInviteToRegistration = () => {
+    const match = window.location.pathname.match(/^\/join\/([^/]+)\/?$/);
+    if (!match) return false;
+
+    window.location.replace(`/?invite=${encodeURIComponent(match[1])}`);
+    return true;
+  };
+
   private handleGlobalError = (event: ErrorEvent) => {
     if (event.error) {
       console.error('Global error caught by ErrorBoundary:', event.error);
-      this.setState({ hasError: true, error: event.error });
+      if (!this.redirectInviteToRegistration()) {
+        this.setState({ hasError: true, error: event.error });
+      }
     }
   };
 
   private handleUnhandledRejection = (event: PromiseRejectionEvent) => {
     console.error('Unhandled rejection caught by ErrorBoundary:', event.reason);
+    if (this.redirectInviteToRegistration()) return;
+
     const err = event.reason instanceof Error ? event.reason : new Error(String(event.reason || 'Sự cố kết nối hoặc phản hồi API không thành công'));
     this.setState({ hasError: true, error: err });
   };
 
   public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
     console.error('Uncaught error caught by ErrorBoundary:', error, errorInfo);
-    this.setState({ errorInfo });
+    if (!this.redirectInviteToRegistration()) {
+      this.setState({ errorInfo });
+    }
   }
 
   private handleReset = () => {
