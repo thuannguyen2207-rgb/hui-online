@@ -104,7 +104,7 @@ export const ExploreHuiModal: React.FC<ExploreHuiModalProps> = ({
       return matchesSearch && day.status === 'recruiting';
     }
     if (activeTab === 'joined') {
-      const isMember = members.some(m => m.huiDayId === day.id && m.userId === currentUser.id && m.status === 'approved');
+      const isMember = members.some(m => m.huiDayId === day.id && m.userId === currentUser.id);
       const isHost = day.hostId === currentUser.id;
       return matchesSearch && (isMember || isHost);
     }
