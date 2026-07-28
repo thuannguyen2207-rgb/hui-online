@@ -211,6 +211,92 @@ export function validateBidAmount(
 }
 
 /**
+ * BẢNG MAPPING NGÂN HÀNG CHUẨN NAPAS247 / VIETQR SHORT NAME
+ * VietinBank: 'ICB' (BIN: 970415)
+ * Vietcombank: 'VCB' (BIN: 970436)
+ * MBBank: 'MB' (BIN: 970422)
+ * BIDV: 'BIDV' (BIN: 970418)
+ * Techcombank: 'TCB' (BIN: 970407)
+ */
+export const VIETQR_BANK_MAP: Record<string, string> = {
+  // VietinBank (Công Thương Việt Nam)
+  'ICB': 'ICB',
+  'CTG': 'ICB',
+  'VIETINBANK': 'ICB',
+  '970415': 'ICB',
+
+  // Vietcombank (Ngoại Thương Việt Nam)
+  'VCB': 'VCB',
+  'VIETCOMBANK': 'VCB',
+  '970436': 'VCB',
+
+  // MBBank (Quân Đội)
+  'MB': 'MB',
+  'MBBANK': 'MB',
+  '970422': 'MB',
+
+  // BIDV (Đầu tư và Phát triển Việt Nam)
+  'BIDV': 'BIDV',
+  '970418': 'BIDV',
+
+  // Techcombank (Kỹ Thương Việt Nam)
+  'TCB': 'TCB',
+  'TECHCOMBANK': 'TCB',
+  '970407': 'TCB',
+
+  // Agribank
+  'VBA': 'VBA',
+  'AGRIBANK': 'VBA',
+  '970405': 'VBA',
+
+  // VPBank
+  'VPB': 'VPB',
+  'VPBANK': 'VPB',
+  '970432': 'VPB',
+
+  // Sacombank
+  'STB': 'STB',
+  'SACOMBANK': 'STB',
+  '970403': 'STB',
+
+  // ACB
+  'ACB': 'ACB',
+  '970416': 'ACB',
+
+  // TPBank
+  'TPB': 'TPB',
+  'TPBANK': 'TPB',
+  '970423': 'TPB',
+
+  // MSB
+  'MSB': 'MSB',
+  '970426': 'MSB',
+
+  // OCB
+  'OCB': 'OCB',
+  '970448': 'OCB',
+
+  // HDBank
+  'HDB': 'HDB',
+  'HDBANK': 'HDB',
+  '970437': 'HDB',
+
+  // SHB
+  'SHB': 'SHB',
+  '970443': 'SHB',
+
+  // VIB
+  'VIB': 'VIB',
+  '970441': 'VIB',
+};
+
+export function resolveVietQRBankCode(bankCodeInput: string): string {
+  if (!bankCodeInput) return 'MB';
+  const clean = bankCodeInput.trim().toUpperCase().replace(/\s+/g, '');
+  return VIETQR_BANK_MAP[clean] || clean;
+}
+
+/**
  * Tạo URL hình ảnh VietQR chuẩn Napas247 động
  */
 export function generateVietQRUrl(
@@ -221,7 +307,7 @@ export function generateVietQRUrl(
   addInfo: string,
   template: string = 'compact2'
 ): string {
-  const cleanBank = bankCode.trim().toUpperCase() || 'MB';
+  const cleanBank = resolveVietQRBankCode(bankCode);
   const cleanAcc = accountNumber.trim() || '0000000000';
   const cleanName = encodeURIComponent(accountName.trim());
   const cleanInfo = encodeURIComponent(addInfo.trim());

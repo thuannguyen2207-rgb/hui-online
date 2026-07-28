@@ -445,19 +445,17 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
                 )}
               </div>
 
-              <div className="p-4 bg-slate-950 rounded-xl border border-slate-800/80 space-y-2 text-xs">
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Ngân hàng:</span>
-                  <span className="text-white font-bold">{huiDay.bankConfig.bankCode} ({huiDay.bankConfig.bankName})</span>
+              <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 text-xs text-slate-400 space-y-1.5">
+                <div className="flex items-center justify-between text-amber-400 font-bold">
+                  <span className="flex items-center space-x-1.5">
+                    <QrCode className="h-4 w-4 text-amber-400" />
+                    <span>Thanh Toán VietQR Tự Động</span>
+                  </span>
+                  <span className="text-[10px] bg-amber-500/20 border border-amber-500/30 px-2 py-0.5 rounded-full text-amber-300 font-semibold">Tích hợp sẵn</span>
                 </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Số tài khoản:</span>
-                  <span className="text-amber-300 font-mono font-bold">{huiDay.bankConfig.accountNumber}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-slate-400">Chủ tài khoản:</span>
-                  <span className="text-white font-bold uppercase">{huiDay.bankConfig.accountName}</span>
-                </div>
+                <p className="text-[11px] text-slate-300 leading-relaxed">
+                  Tài khoản nhận tiền đóng hụi của Chủ Hụi đã được tự động kết xuất trực tiếp vào mã QR khi bạn bấm <strong>"Đóng Tiền Hụi (VietQR)"</strong>.
+                </p>
               </div>
             </div>
 

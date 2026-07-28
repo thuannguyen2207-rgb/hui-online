@@ -131,148 +131,168 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </nav>
 
-          {/* Right Actions */}
-          <div className="flex items-center space-x-3">
+          {/* Right Actions & User Profile Control */}
+          <div className="flex items-center space-x-2 sm:space-x-2.5">
             
-            {/* Explore / Join Hui Days Button */}
-            {onOpenExploreModal && (
-              <button
-                onClick={onOpenExploreModal}
-                className="bg-slate-950 hover:bg-slate-800 text-amber-400 border border-amber-500/30 hover:border-amber-400 font-bold text-xs sm:text-sm px-3 sm:px-3.5 py-2 rounded-xl shadow-md flex items-center space-x-1.5 transition-all active:scale-95"
-                title="Khám phá và gửi yêu cầu xin gia nhập các dây hụi mở"
-              >
-                <Coins className="h-4 w-4 text-amber-400" />
-                <span className="hidden md:inline">Khám Phá Dây Hụi</span>
-                <span className="md:hidden">Tìm Dây</span>
-              </button>
-            )}
-
-            {/* EXTENDED FINANCIAL SERVICES SHORTCUT (P2P LENDING & MATURITY VAULTS) */}
-            {onOpenExtendedServicesModal && (
-              <button
-                onClick={onOpenExtendedServicesModal}
-                className="bg-emerald-950/90 hover:bg-emerald-900 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 font-extrabold text-xs sm:text-sm px-3 sm:px-3.5 py-2 rounded-xl shadow-md flex items-center space-x-1.5 transition-all active:scale-95"
-                title="Mở Dịch Vụ Cho Vay P2P & Hũ Tích Lũy Mãn Hạn"
-              >
-                <Landmark className="h-4 w-4 text-emerald-400" />
-                <span className="hidden lg:inline">Dịch Vụ Mở Rộng (P2P & Hũ Mãn Hạn)</span>
-                <span className="lg:hidden">P2P & Hũ Hụi</span>
-              </button>
-            )}
-
-            {/* LIVE BIDDING ROOM SHORTCUT */}
-            {onOpenLiveBiddingModal && (
-              <button
-                onClick={onOpenLiveBiddingModal}
-                className="relative bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-slate-950 font-black text-xs sm:text-sm px-3 sm:px-3.5 py-2 rounded-xl shadow-lg shadow-rose-500/20 flex items-center space-x-1.5 transition-all active:scale-95"
-                title="Mở Sàn Đấu Hụi Trực Tuyến Live"
-              >
-                <Flame className="h-4 w-4 text-slate-950 animate-bounce" />
-                <span>ĐẤU HỤI LIVE</span>
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-950 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-950"></span>
-                </span>
-              </button>
-            )}
-
-            {/* Create New Hui Day & Bank Config Buttons - EXCLUSIVE TO CHỦ HỤI / HOST ADMIN */}
-            {currentUser.role === 'chu_hui' && (
-              <>
-                {onOpenBankConfigModal && (
-                  <button
-                    onClick={onOpenBankConfigModal}
-                    className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 hover:border-amber-400 font-bold text-xs sm:text-sm px-3 py-2 rounded-xl flex items-center space-x-1.5 transition-all active:scale-95"
-                    title="Cấu hình tài khoản ngân hàng Chủ Hụi để nhận tiền đóng hụi qua VietQR"
-                  >
-                    <QrCode className="h-4 w-4 text-amber-400" />
-                    <span className="hidden xl:inline">TK Ngân Hàng VietQR</span>
-                    <span className="xl:hidden">VietQR</span>
-                  </button>
-                )}
-
+            {/* Quick Actions Group */}
+            <div className="flex items-center space-x-1.5">
+              {/* Explore / Join Hui Days Button */}
+              {onOpenExploreModal && (
                 <button
-                  onClick={onOpenCreateModal}
-                  className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-bold text-xs sm:text-sm px-3 sm:px-4 py-2 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center space-x-1.5 transition-all active:scale-95"
-                  title="Quyền dành riêng cho Chủ Hụi: Khởi tạo dây hụi mới"
+                  onClick={onOpenExploreModal}
+                  className="bg-slate-950 hover:bg-slate-800 text-amber-400 border border-amber-500/30 font-bold text-xs px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center space-x-1 transition-all active:scale-95"
+                  title="Khám phá các dây hụi mở"
                 >
-                  <PlusCircle className="h-4 w-4" />
-                  <span className="hidden sm:inline">Tạo Dây Hụi Mới</span>
-                  <span className="sm:hidden">+ Tạo Dây</span>
+                  <Coins className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                  <span className="hidden xl:inline">Khám Phá Dây</span>
                 </button>
-              </>
-            )}
+              )}
 
-            {/* Role Switcher Toggle */}
-            <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center">
-              <button
-                onClick={() => onSwitchRole('chu_hui')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center space-x-1 transition-all ${
-                  currentUser.role === 'chu_hui'
-                    ? 'bg-emerald-500 text-slate-950 font-bold shadow'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                title="Chế độ Chủ Hụi: Có quyền chốt kỳ, duyệt gạch nợ, tạo dây hụi"
-              >
-                <ShieldCheck className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Chủ Hụi</span>
-              </button>
-              <button
-                onClick={() => onSwitchRole('hui_vien')}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center space-x-1 transition-all ${
-                  currentUser.role === 'hui_vien'
-                    ? 'bg-blue-500 text-white font-bold shadow'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                title="Chế độ Hụi Viên: Nộp thăm, xem sổ sách, đóng tiền VietQR"
-              >
-                <UserCheck className="h-3.5 w-3.5" />
-                <span className="hidden sm:inline">Hụi Viên</span>
-              </button>
+              {/* EXTENDED FINANCIAL SERVICES SHORTCUT */}
+              {onOpenExtendedServicesModal && (
+                <button
+                  onClick={onOpenExtendedServicesModal}
+                  className="bg-emerald-950/90 hover:bg-emerald-900 text-emerald-400 border border-emerald-500/40 font-extrabold text-xs px-2.5 sm:px-3 py-1.5 rounded-xl flex items-center space-x-1 transition-all active:scale-95"
+                  title="Cho Vay P2P & Hũ Mãn Hạn"
+                >
+                  <Landmark className="h-3.5 w-3.5 text-emerald-400 shrink-0" />
+                  <span className="hidden xl:inline">P2P & Hũ Hụi</span>
+                </button>
+              )}
+
+              {/* LIVE BIDDING ROOM SHORTCUT */}
+              {onOpenLiveBiddingModal && (
+                <button
+                  onClick={onOpenLiveBiddingModal}
+                  className="relative bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-slate-950 font-black text-xs px-2.5 sm:px-3 py-1.5 rounded-xl shadow-md flex items-center space-x-1 transition-all active:scale-95"
+                  title="Mở Sàn Đấu Hụi Live"
+                >
+                  <Flame className="h-3.5 w-3.5 text-slate-950 animate-bounce shrink-0" />
+                  <span className="hidden sm:inline">ĐẤU HỤI LIVE</span>
+                  <span className="sm:hidden">LIVE</span>
+                </button>
+              )}
+
+              {/* Create New Hui Day & Bank Config Buttons - EXCLUSIVE TO CHỦ HỤI */}
+              {currentUser.role === 'chu_hui' && (
+                <>
+                  {onOpenBankConfigModal && (
+                    <button
+                      onClick={onOpenBankConfigModal}
+                      className="bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 border border-amber-500/30 font-bold text-xs px-2.5 py-1.5 rounded-xl flex items-center space-x-1 transition-all active:scale-95"
+                      title="Cấu hình VietQR Chủ Hụi"
+                    >
+                      <QrCode className="h-3.5 w-3.5 text-amber-400 shrink-0" />
+                      <span className="hidden 2xl:inline">VietQR</span>
+                    </button>
+                  )}
+
+                  <button
+                    onClick={onOpenCreateModal}
+                    className="bg-gradient-to-r from-emerald-500 to-emerald-600 hover:from-emerald-400 hover:to-emerald-500 text-slate-950 font-extrabold text-xs px-2.5 sm:px-3 py-1.5 rounded-xl shadow-md flex items-center space-x-1 transition-all active:scale-95"
+                    title="Tạo dây hụi mới"
+                  >
+                    <PlusCircle className="h-3.5 w-3.5 shrink-0" />
+                    <span className="hidden md:inline">+ Tạo Dây</span>
+                  </button>
+                </>
+              )}
             </div>
 
-            {/* Mobile View / Desktop Toggle */}
-            <button
-              onClick={onToggleMobileFrame}
-              className="p-2 text-slate-400 hover:text-amber-400 bg-slate-800/80 hover:bg-slate-800 rounded-xl transition-all border border-slate-700/50 hidden lg:flex items-center justify-center"
-              title={isMobileFrame ? "Chuyển sang Giao diện Desktop Rộng" : "Khung Giả Lập App Mobile (iOS/Android)"}
-            >
-              {isMobileFrame ? <Monitor className="h-4 w-4" /> : <Smartphone className="h-4 w-4 text-amber-400" />}
-            </button>
-
-            {/* User Profile Settings Button */}
-            <button
-              onClick={onOpenUserSettingsModal || onOpenAuthModal}
-              className="flex items-center space-x-2 p-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-800 border border-slate-700/60 transition-all text-left group"
-              title="Cài đặt hồ sơ & tài khoản cá nhân"
-            >
-              <img
-                src={currentUser.avatar}
-                alt={currentUser.name}
-                className="h-7 w-7 rounded-lg object-cover ring-2 ring-amber-500/50 group-hover:ring-amber-400"
-              />
-              <div className="hidden lg:block text-xs">
-                <div className="font-semibold text-white truncate max-w-[100px] flex items-center space-x-1">
-                  <span>{currentUser.name}</span>
-                </div>
-                <div className="text-[10px] text-emerald-400 flex items-center">
-                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 mr-1 animate-pulse"></span>
-                  {currentUser.phone}
-                </div>
-              </div>
-              <Settings className="h-4 w-4 text-slate-400 group-hover:text-amber-400 transition-colors hidden sm:block ml-0.5" />
-            </button>
-
-            {/* Logout Button */}
-            {onLogout && (
+            {/* Compact Unified User Profile Card */}
+            <div className="bg-slate-950 p-1 rounded-2xl border border-slate-800 flex items-center space-x-1.5 shadow-inner">
+              
+              {/* Avatar + Info */}
               <button
-                onClick={onLogout}
-                className="p-2 text-slate-400 hover:text-rose-400 bg-slate-800/80 hover:bg-slate-800 rounded-xl transition-all border border-slate-700/50 flex items-center justify-center"
-                title="Đăng xuất khỏi hệ thống"
+                onClick={onOpenUserSettingsModal || onOpenAuthModal}
+                className="flex items-center space-x-2 px-2 py-1 rounded-xl hover:bg-slate-900 transition-colors group text-left"
+                title="Cài đặt hồ sơ cá nhân"
               >
-                <LogOut className="h-4 w-4" />
+                <div className="relative">
+                  <img
+                    src={currentUser.avatar}
+                    alt={currentUser.name}
+                    className="h-8 w-8 rounded-xl object-cover ring-2 ring-amber-500/40 group-hover:ring-amber-400 transition-all"
+                  />
+                  <span className={`absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-slate-950 ${
+                    currentUser.role === 'chu_hui' ? 'bg-emerald-400' : 'bg-blue-400'
+                  }`} />
+                </div>
+
+                <div className="hidden lg:block leading-tight">
+                  <div className="flex items-center space-x-1">
+                    <span className="font-extrabold text-xs text-white truncate max-w-[90px]">{currentUser.name}</span>
+                    <span className={`text-[9px] px-1.5 py-0.2 rounded font-extrabold uppercase ${
+                      currentUser.role === 'chu_hui' ? 'bg-emerald-500/20 text-emerald-400' : 'bg-blue-500/20 text-blue-400'
+                    }`}>
+                      {currentUser.role === 'chu_hui' ? 'Chủ Hụi' : 'Hội Viên'}
+                    </span>
+                  </div>
+                  <span className="text-[10px] text-slate-400 font-mono block">{currentUser.phone}</span>
+                </div>
               </button>
-            )}
+
+              {/* Role Switcher Toggle Pills */}
+              <div className="bg-slate-900 p-0.5 rounded-xl border border-slate-800/80 flex items-center">
+                <button
+                  onClick={() => onSwitchRole('chu_hui')}
+                  className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center space-x-1 transition-all ${
+                    currentUser.role === 'chu_hui'
+                      ? 'bg-emerald-500 text-slate-950 shadow'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Đổi sang vai trò Chủ Hụi"
+                >
+                  <ShieldCheck className="h-3 w-3" />
+                  <span className="hidden sm:inline">Chủ Hụi</span>
+                </button>
+
+                <button
+                  onClick={() => onSwitchRole('hui_vien')}
+                  className={`px-2 py-1 rounded-lg text-[11px] font-bold flex items-center space-x-1 transition-all ${
+                    currentUser.role === 'hui_vien'
+                      ? 'bg-blue-500 text-white shadow'
+                      : 'text-slate-400 hover:text-white'
+                  }`}
+                  title="Đổi sang vai trò Hội Viên"
+                >
+                  <UserCheck className="h-3 w-3" />
+                  <span className="hidden sm:inline">Hội Viên</span>
+                </button>
+              </div>
+
+              {/* Settings Icon Button */}
+              {onOpenUserSettingsModal && (
+                <button
+                  onClick={onOpenUserSettingsModal}
+                  className="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-900 rounded-xl transition-colors"
+                  title="Cài đặt tài khoản"
+                >
+                  <Settings className="h-4 w-4" />
+                </button>
+              )}
+
+              {/* Mobile Frame Toggle */}
+              <button
+                onClick={onToggleMobileFrame}
+                className="p-1.5 text-slate-400 hover:text-amber-400 hover:bg-slate-900 rounded-xl transition-colors hidden xl:flex items-center justify-center"
+                title={isMobileFrame ? "Xem Giao diện Đầy Đủ" : "Xem Giả Lập Mobile App"}
+              >
+                {isMobileFrame ? <Monitor className="h-4 w-4" /> : <Smartphone className="h-4 w-4 text-amber-400" />}
+              </button>
+
+              {/* Logout Button */}
+              {onLogout && (
+                <button
+                  onClick={onLogout}
+                  className="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-slate-900 rounded-xl transition-colors"
+                  title="Đăng xuất"
+                >
+                  <LogOut className="h-4 w-4" />
+                </button>
+              )}
+
+            </div>
 
           </div>
 

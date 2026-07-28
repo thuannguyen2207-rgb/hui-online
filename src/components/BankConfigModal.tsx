@@ -19,7 +19,7 @@ export const POPULAR_BANKS = [
   { code: 'VCB', name: 'Vietcombank (Ngoại Thương Việt Nam)' },
   { code: 'TCB', name: 'Techcombank (Kỹ Thương Việt Nam)' },
   { code: 'BIDV', name: 'BIDV (Đầu tư và Phát triển Việt Nam)' },
-  { code: 'CTG', name: 'VietinBank (Công Thương Việt Nam)' },
+  { code: 'ICB', name: 'VietinBank (Công Thương Việt Nam)' },
   { code: 'VBA', name: 'Agribank (Nông nghiệp & PTNT)' },
   { code: 'VPB', name: 'VPBank (Việt Nam Thịnh Vượng)' },
   { code: 'STB', name: 'Sacombank (Sài Gòn Thương Tín)' },

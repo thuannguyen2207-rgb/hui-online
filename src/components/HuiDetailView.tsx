@@ -721,25 +721,24 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
               </span>
             </div>
 
-            <div className="p-4 bg-slate-950 rounded-xl border border-slate-800 space-y-1 relative">
+            <div className="p-3.5 bg-slate-950 rounded-xl border border-slate-800 space-y-1.5 relative">
               <div className="flex items-center justify-between">
-                <span className="text-slate-400 block">Ngân Hàng VietQR Nhận Tiền</span>
+                <span className="text-slate-400 text-xs font-bold flex items-center space-x-1.5">
+                  <QrCode className="h-4 w-4 text-amber-400" />
+                  <span>Tài Khoản VietQR Đóng Hụi</span>
+                </span>
                 {(currentUser.role === 'chu_hui' || currentUser.id === huiDay.hostId) && onOpenBankConfigModal && (
                   <button
                     onClick={onOpenBankConfigModal}
-                    className="text-xs bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold px-2.5 py-1 rounded-lg border border-amber-500/30 flex items-center space-x-1 transition-all"
+                    className="text-[11px] bg-amber-500/10 hover:bg-amber-500/20 text-amber-400 font-bold px-2 py-1 rounded-lg border border-amber-500/30 flex items-center space-x-1 transition-all"
                   >
-                    <QrCode className="h-3.5 w-3.5" />
-                    <span>Chỉnh Sửa TK</span>
+                    <span>Cấu Hình VietQR</span>
                   </button>
                 )}
               </div>
-              <span className="text-sm font-bold text-amber-400 font-mono block pt-1">
-                {huiDay.bankConfig.bankCode} - {huiDay.bankConfig.accountNumber}
-              </span>
-              <span className="text-xs text-slate-300 font-semibold uppercase block">
-                {huiDay.bankConfig.accountName} ({huiDay.bankConfig.bankName})
-              </span>
+              <p className="text-[11px] text-slate-400 leading-relaxed">
+                Thông tin tài khoản nhận tiền của Chủ Hụi được tự động tạo thành mã QR chuẩn Napas247 khi hội viên bấm thanh toán.
+              </p>
             </div>
           </div>
 

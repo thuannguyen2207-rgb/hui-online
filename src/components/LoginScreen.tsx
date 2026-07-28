@@ -2,6 +2,8 @@ import React, { useState } from 'react';
 import { User, UserRole } from '../types';
 import { MOCK_USERS } from '../data/mockData';
 import { supabase } from '../lib/supabase';
+import { AddressPickerModal } from './AddressPickerModal';
+import { QUICK_PRESET_ADDRESSES } from '../data/addressData';
 import { 
   Phone, 
   Mail,
@@ -23,7 +25,8 @@ import {
   Send,
   User as UserIcon,
   MessageSquareCode,
-  MapPin
+  MapPin,
+  Sparkles
 } from 'lucide-react';
 
 interface LoginScreenProps {
@@ -52,6 +55,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [regPassword, setRegPassword] = useState('');
   const [isRegisterOtpSent, setIsRegisterOtpSent] = useState(false);
   const [registerOtpCode, setRegisterOtpCode] = useState('');
+  const [isAddressPickerOpen, setIsAddressPickerOpen] = useState(false);
 
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -625,9 +629,20 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
                   {/* Home Address */}
                   <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Địa Chỉ Nhà / Thường Trú <span className="text-rose-400">*</span>
-                    </label>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-xs font-semibold text-slate-300">
+                        Địa Chỉ Nhà / Thường Trú <span className="text-rose-400">*</span>
+                      </label>
+                      <button
+                        type="button"
+                        onClick={() => setIsAddressPickerOpen(true)}
+                        className="text-[11px] font-bold text-amber-400 hover:text-amber-300 flex items-center space-x-1 transition-colors"
+                      >
+                        <Sparkles className="h-3 w-3" />
+                        <span>Chọn Theo Tỉnh/Quận/Đường</span>
+                      </button>
+                    </div>
+
                     <div className="relative">
                       <MapPin className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-400" />
                       <input
@@ -636,8 +651,30 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                         onChange={(e) => setRegAddress(e.target.value)}
                         placeholder="Số nhà, Đường, Phường/Xã, Quận/Huyện, Tỉnh/TP"
                         required
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-white text-xs font-semibold focus:outline-none focus:border-amber-500"
+                        className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-24 py-2.5 text-white text-xs font-semibold focus:outline-none focus:border-amber-500"
                       />
+                      <button
+                        type="button"
+                        onClick={() => setIsAddressPickerOpen(true)}
+                        className="absolute right-2 top-1/2 -translate-y-1/2 px-2.5 py-1 bg-amber-500/20 hover:bg-amber-500/30 text-amber-300 border border-amber-500/40 rounded-lg text-[10px] font-bold transition-all"
+                      >
+                        Chọn Nhanh
+                      </button>
+                    </div>
+
+                    {/* Quick suggestion chips */}
+                    <div className="mt-1.5 flex flex-wrap items-center gap-1">
+                      <span className="text-[10px] text-slate-500">Mẫu nhanh:</span>
+                      {QUICK_PRESET_ADDRESSES.slice(0, 3).map((preset, pIdx) => (
+                        <button
+                          key={pIdx}
+                          type="button"
+                          onClick={() => setRegAddress(preset)}
+                          className="px-2 py-0.5 bg-slate-950 hover:bg-slate-800 border border-slate-800 rounded-md text-[10px] text-slate-400 hover:text-amber-300 truncate max-w-[170px] transition-all"
+                        >
+                          {preset}
+                        </button>
+                      ))}
                     </div>
                   </div>
 
@@ -819,6 +856,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         <p className="text-center text-[11px] text-slate-500">
           Sổ Hụi Trực Tuyến • Hệ Thống Mã Xác Thực OTP SMS / Email
         </p>
+
+        {/* Address Selector Modal */}
+        <AddressPickerModal
+          isOpen={isAddressPickerOpen}
+          onClose={() => setIsAddressPickerOpen(false)}
+          onSelectAddress={(addr) => setRegAddress(addr)}
+          currentAddress={regAddress}
+        />
 
       </div>
     </div>
