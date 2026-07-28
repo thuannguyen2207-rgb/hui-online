@@ -279,11 +279,12 @@ export async function fetchHuiDaysFromSupabase(): Promise<HuiDay[]> {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error || !data) {
+    if (error) {
+      console.error('Error fetching discoverable hui groups from Supabase:', error);
       return [];
     }
 
-    return data.map(mapDbHuiGroupToHuiDay);
+    return (data || []).map(mapDbHuiGroupToHuiDay);
   } catch (err) {
     console.warn('Supabase fetchHuiDays exception:', err);
     return [];

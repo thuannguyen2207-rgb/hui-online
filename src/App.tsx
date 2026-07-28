@@ -230,6 +230,15 @@ export function App() {
   const [targetBankMember, setTargetBankMember] = useState<HuiMember | undefined>(undefined);
   const [activeVietQRTx, setActiveVietQRTx] = useState<Transaction | null>(null);
 
+  // Refresh public hui groups whenever a member opens the discovery modal.
+  useEffect(() => {
+    if (!isExploreModalOpen) return;
+
+    void fetchHuiDaysFromSupabase().then((groups) => {
+      setHuiDays(groups);
+    });
+  }, [isExploreModalOpen]);
+
   // Handlers for P2P Loans
   const handleCreateP2PLoan = (loan: Omit<P2PLoan, 'id' | 'createdAt' | 'status'>) => {
     const newLoan: P2PLoan = {
@@ -550,9 +559,12 @@ export function App() {
   };
 
   // Create New Hui Day
-  const handleCreateHuiDay = (newDay: HuiDay) => {
-    // Persist to Supabase
-    createHuiDayInSupabase(newDay);
+  const handleCreateHuiDay = async (newDay: HuiDay) => {
+    const created = await createHuiDayInSupabase(newDay);
+    if (!created) {
+      alert('Không thể lưu dây hụi. Vui lòng kiểm tra quyền Supabase rồi thử lại.');
+      return;
+    }
 
     setHuiDays([newDay, ...huiDays]);
     setSelectedHuiDayId(newDay.id);
