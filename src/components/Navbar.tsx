@@ -205,36 +205,45 @@ export const Navbar: React.FC<NavbarProps> = ({
         {/* ROW 2: Role Toggle & Feature Action Toolbar */}
         <div className="py-2 flex flex-wrap items-center justify-between gap-2 text-xs">
           
-          {/* Left: Role Switcher */}
-          <div className="flex items-center space-x-2">
-            <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline">Chế độ xem:</span>
-            <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center">
-              <button
-                onClick={() => onSwitchRole('chu_hui')}
-                className={`px-3 py-1 rounded-lg text-xs font-extrabold flex items-center space-x-1 transition-all ${
-                  currentUser.role === 'chu_hui'
-                    ? 'bg-emerald-500 text-slate-950 shadow-md'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                title="Đổi sang giao diện & quyền hạn Chủ Hụi"
-              >
-                <ShieldCheck className="h-3.5 w-3.5" />
-                <span>Chủ Hụi</span>
-              </button>
-              <button
-                onClick={() => onSwitchRole('hui_vien')}
-                className={`px-3 py-1 rounded-lg text-xs font-extrabold flex items-center space-x-1 transition-all ${
-                  currentUser.role === 'hui_vien'
-                    ? 'bg-blue-500 text-white shadow-md'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-                title="Đổi sang giao diện Hội Viên"
-              >
-                <UserCheck className="h-3.5 w-3.5" />
-                <span>Hội Viên</span>
-              </button>
+          {/* Left: Role Switcher (Hiển thị CHỈ DÀNH RIÊNG cho duy nhất tài khoản Admin / Chủ Hụi) */}
+          {currentUser && (currentUser.phone === '0908123456' || currentUser.email === 'chuhui@gmail.com' || currentUser.id === 'u_host_1' || currentUser.id === 'u_host' || currentUser.role === 'chu_hui') ? (
+            <div className="flex items-center space-x-2">
+              <span className="text-[11px] font-semibold text-slate-400 hidden sm:inline">Chế độ xem:</span>
+              <div className="bg-slate-950 p-1 rounded-xl border border-slate-800 flex items-center">
+                <button
+                  onClick={() => onSwitchRole('chu_hui')}
+                  className={`px-3 py-1 rounded-lg text-xs font-extrabold flex items-center space-x-1 transition-all ${
+                    currentUser?.role === 'chu_hui'
+                      ? 'bg-emerald-500 text-slate-950 shadow-md'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                  title="Đổi sang giao diện & quyền hạn Chủ Hụi"
+                >
+                  <ShieldCheck className="h-3.5 w-3.5" />
+                  <span>Chủ Hụi</span>
+                </button>
+                <button
+                  onClick={() => onSwitchRole('hui_vien')}
+                  className={`px-3 py-1 rounded-lg text-xs font-extrabold flex items-center space-x-1 transition-all ${
+                    currentUser?.role === 'hui_vien'
+                      ? 'bg-blue-500 text-white shadow-md'
+                      : 'text-slate-400 hover:text-slate-200'
+                  }`}
+                  title="Đổi sang giao diện Hội Viên"
+                >
+                  <UserCheck className="h-3.5 w-3.5" />
+                  <span>Hội Viên</span>
+                </button>
+              </div>
             </div>
-          </div>
+          ) : (
+            <div className="flex items-center space-x-2">
+              <span className="text-xs font-bold text-blue-400 flex items-center space-x-1.5 bg-blue-950/60 px-3 py-1.5 rounded-xl border border-blue-500/30">
+                <UserCheck className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                <span>GIAO DIỆN HỘI VIÊN: <span className="text-white font-black">{currentUser?.name}</span></span>
+              </span>
+            </div>
+          )}
 
           {/* Right: Quick Action Buttons */}
           <div className="flex items-center flex-wrap gap-1.5 sm:gap-2">

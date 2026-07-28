@@ -511,9 +511,14 @@ export function App() {
   const activeTransactions = activeHuiDay ? transactions.filter(t => t.huiDayId === activeHuiDay.id && t.roundId === `round_bt_${activeHuiDay.currentRound - 1 || 1}`) : [];
   const activeChatMessages = activeHuiDay ? chatMessages.filter(c => c.huiDayId === activeHuiDay.id) : [];
 
-  // Switch Role
+  // Switch Role (Dành riêng cho duy nhất tài khoản Admin / Chủ Hụi)
   const handleSwitchRole = (role: UserRole) => {
     if (!currentUser) return;
+    const isHostAdmin = currentUser.phone === '0908123456' || currentUser.email === 'chuhui@gmail.com' || currentUser.id === 'u_host_1' || currentUser.id === 'u_host' || currentUser.role === 'chu_hui';
+    if (!isHostAdmin) {
+      alert('Tài khoản Hội Viên không có quyền chuyển đổi sang giao diện Chủ Hụi.');
+      return;
+    }
     const updatedUser = { ...currentUser, role };
     setCurrentUser(updatedUser);
     setAllUsers(prev => prev.map(u => u.id === currentUser.id ? updatedUser : u));
@@ -989,32 +994,34 @@ export function App() {
                   </div>
                 </div>
 
-                {/* Role Switcher Controls */}
-                <div className="flex items-center space-x-2 shrink-0 bg-slate-950 p-1.5 rounded-xl border border-slate-800 self-end md:self-center">
-                  <button
-                    onClick={() => handleSwitchRole('chu_hui')}
-                    className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
-                      currentUser.role === 'chu_hui'
-                        ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-900'
-                    }`}
-                  >
-                    <ShieldCheck className="h-4 w-4" />
-                    <span>Giao Diện Chủ Hụi</span>
-                  </button>
+                {/* Role Switcher Controls - HIỆN CHỈ DÀNH RIÊNG CHO TÀI KHOẢN ADMIN/CHỦ HỤI */}
+                {(currentUser.phone === '0908123456' || currentUser.email === 'chuhui@gmail.com' || currentUser.id === 'u_host_1' || currentUser.id === 'u_host' || currentUser.role === 'chu_hui') && (
+                  <div className="flex items-center space-x-2 shrink-0 bg-slate-950 p-1.5 rounded-xl border border-slate-800 self-end md:self-center">
+                    <button
+                      onClick={() => handleSwitchRole('chu_hui')}
+                      className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                        currentUser.role === 'chu_hui'
+                          ? 'bg-emerald-500 text-slate-950 shadow-md shadow-emerald-500/20'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                      }`}
+                    >
+                      <ShieldCheck className="h-4 w-4" />
+                      <span>Giao Diện Chủ Hụi</span>
+                    </button>
 
-                  <button
-                    onClick={() => handleSwitchRole('hui_vien')}
-                    className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
-                      currentUser.role === 'hui_vien'
-                        ? 'bg-blue-500 text-white shadow-md shadow-blue-500/20'
-                        : 'text-slate-400 hover:text-white hover:bg-slate-900'
-                    }`}
-                  >
-                    <UserCheck className="h-4 w-4" />
-                    <span>Giao Diện Hội Viên</span>
-                  </button>
-                </div>
+                    <button
+                      onClick={() => handleSwitchRole('hui_vien')}
+                      className={`px-3.5 py-2 rounded-lg text-xs font-bold transition-all flex items-center space-x-1.5 ${
+                        currentUser.role === 'hui_vien'
+                          ? 'bg-blue-500 text-white shadow-md shadow-blue-500/20'
+                          : 'text-slate-400 hover:text-white hover:bg-slate-900'
+                      }`}
+                    >
+                      <UserCheck className="h-4 w-4" />
+                      <span>Giao Diện Hội Viên</span>
+                    </button>
+                  </div>
+                )}
 
               </div>
             </div>
