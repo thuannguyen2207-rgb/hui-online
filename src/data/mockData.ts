@@ -1,4 +1,4 @@
-import { Bid, ChatMessage, HuiDay, HuiMember, HuiRound, Transaction, User } from '../types';
+import { Bid, ChatMessage, HuiDay, HuiMember, HuiRound, Transaction, User, P2PLoan, MaturityVault } from '../types';
 
 export const MOCK_USERS: User[] = [
   {
@@ -90,6 +90,8 @@ export const MOCK_HUI_DAYS: HuiDay[] = [
     },
     description: 'Dây hụi 1 tháng uy tín cho tiểu thương Chợ Bến Thành, chốt thăm ngày 01 hàng tháng. Thăm nộp bí mật, trần đấu 30%.',
     createdAt: '2026-05-15T08:00:00Z',
+    allowP2pLending: true,
+    allowMaturityVault: true,
   },
   {
     id: 'day_nua_thang_2m',
@@ -625,3 +627,82 @@ export const MOCK_CHAT_MESSAGES: ChatMessage[] = [
     type: 'text',
   }
 ];
+
+export const MOCK_P2P_LOANS: P2PLoan[] = [
+  {
+    id: 'p2p_loan_1',
+    borrowerId: 'u_mem_3',
+    borrowerName: 'Phạm Thị Dung',
+    borrowerAvatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
+    amount: 5000000,
+    interestRateYearly: 12, // 12%/năm
+    termMonths: 3,
+    purpose: 'Xoay vốn nhập hàng quần áo thời trang vụ Thu Đông',
+    collateralNote: 'Thế chấp 1 Suất Hụi Sống Dây Bến Thành 10M',
+    status: 'open',
+    createdAt: '2026-07-25T10:00:00Z',
+  },
+  {
+    id: 'p2p_loan_2',
+    borrowerId: 'u_mem_4',
+    borrowerName: 'Hoàng Văn Em',
+    borrowerAvatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
+    lenderId: 'u_host_1',
+    lenderName: 'Nguyễn Văn An (Chủ Hụi)',
+    amount: 3000000,
+    interestRateYearly: 10,
+    termMonths: 2,
+    purpose: 'Cần vốn nộp tiền hụi sống kỳ 3 dây Tuần Lộc Phát',
+    collateralNote: 'Tín nhiệm bảo lãnh bởi Chủ Hụi',
+    status: 'funded',
+    createdAt: '2026-07-20T14:30:00Z',
+    fundedAt: '2026-07-21T09:00:00Z',
+    dueDate: '2026-09-21T09:00:00Z',
+  }
+];
+
+export const MOCK_MATURITY_VAULTS: MaturityVault[] = [
+  {
+    id: 'vault_1',
+    userId: 'u_mem_3',
+    userName: 'Phạm Thị Dung',
+    huiDayId: 'day_ben_thanh_10m',
+    huiDayName: 'Hụi Tháng Chợ Bến Thành - 10 Tr/Kỳ',
+    vaultName: 'Hũ Tiết Kiệm Mãn Hạn Dây Bến Thành',
+    targetCycles: 10,
+    completedCycles: 3,
+    amountPerCycle: 1000000, // 1,000,000 đ/kỳ
+    bonusInterestRate: 8.5, // 8.5%/năm
+    status: 'active',
+    startDate: '2026-05-01T00:00:00Z',
+    maturityDate: '2027-03-01T00:00:00Z',
+    deposits: [
+      { id: 'dep_1', cycleNumber: 1, amount: 1000000, date: '2026-05-01', status: 'paid' },
+      { id: 'dep_2', cycleNumber: 2, amount: 1000000, date: '2026-06-01', status: 'paid' },
+      { id: 'dep_3', cycleNumber: 3, amount: 1000000, date: '2026-07-01', status: 'paid' }
+    ]
+  },
+  {
+    id: 'vault_2',
+    userId: 'u_host_1',
+    userName: 'Nguyễn Văn An (Chủ Hụi)',
+    huiDayId: 'day_loc_phat_5m',
+    huiDayName: 'Hụi Tuần Lộc Phát - 5 Tr/Kỳ',
+    vaultName: 'Hũ Tích Lũy Lộc Phát Mãn Hạn',
+    targetCycles: 8,
+    completedCycles: 8, // Fully completed maturity
+    amountPerCycle: 2000000,
+    bonusInterestRate: 9.0,
+    status: 'matured',
+    startDate: '2026-05-15T00:00:00Z',
+    maturityDate: '2026-07-15T00:00:00Z',
+    deposits: Array.from({ length: 8 }).map((_, i) => ({
+      id: `dep_host_${i + 1}`,
+      cycleNumber: i + 1,
+      amount: 2000000,
+      date: `2026-05-${i + 15}`,
+      status: 'paid'
+    }))
+  }
+];
+

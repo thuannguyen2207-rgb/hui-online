@@ -1,6 +1,6 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Bid, BankConfig, ChatMessage, HuiDay, HuiMember, HuiRound, Transaction, User, UserRole } from './types';
-import { MOCK_BIDS, MOCK_CHAT_MESSAGES, MOCK_HUI_DAYS, MOCK_MEMBERS, MOCK_ROUNDS, MOCK_TRANSACTIONS, MOCK_USERS } from './data/mockData';
+import { Bid, BankConfig, ChatMessage, HuiDay, HuiMember, HuiRound, Transaction, User, UserRole, P2PLoan, MaturityVault } from './types';
+import { MOCK_BIDS, MOCK_CHAT_MESSAGES, MOCK_HUI_DAYS, MOCK_MEMBERS, MOCK_ROUNDS, MOCK_TRANSACTIONS, MOCK_USERS, MOCK_P2P_LOANS, MOCK_MATURITY_VAULTS } from './data/mockData';
 import { calculateMemberStates, calculateRoundPayout, formatVND, generateVietQRUrl, getCycleTypeLabel } from './utils/huiFinancialEngine';
 import { supabase } from './lib/supabase';
 import { Navbar } from './components/Navbar';
@@ -10,6 +10,8 @@ import { CreateHuiModal } from './components/CreateHuiModal';
 import { BankConfigModal } from './components/BankConfigModal';
 import { MemberRegisterBankModal } from './components/MemberRegisterBankModal';
 import { UserSettingsModal } from './components/UserSettingsModal';
+import { LiveBiddingRoom } from './components/LiveBiddingRoom';
+import { ExtendedFinancialServicesModal } from './components/ExtendedFinancialServicesModal';
 import { VietQRModal } from './components/VietQRModal';
 import { ExploreHuiModal } from './components/ExploreHuiModal';
 import { HuiDetailView } from './components/HuiDetailView';
@@ -84,14 +86,114 @@ export function App() {
   const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTIONS);
   const [chatMessages, setChatMessages] = useState<ChatMessage[]>(MOCK_CHAT_MESSAGES);
 
+  // Extended Financial Services State
+  const [p2pLoans, setP2pLoans] = useState<P2PLoan[]>(MOCK_P2P_LOANS);
+  const [maturityVaults, setMaturityVaults] = useState<MaturityVault[]>(MOCK_MATURITY_VAULTS);
+
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
   const [isExploreModalOpen, setIsExploreModalOpen] = useState(false);
   const [isBankConfigModalOpen, setIsBankConfigModalOpen] = useState(false);
   const [isRegisterBankModalOpen, setIsRegisterBankModalOpen] = useState(false);
   const [isUserSettingsModalOpen, setIsUserSettingsModalOpen] = useState(false);
+  const [isLiveBiddingModalOpen, setIsLiveBiddingModalOpen] = useState(false);
+  const [isExtendedServicesModalOpen, setIsExtendedServicesModalOpen] = useState(false);
   const [targetBankMember, setTargetBankMember] = useState<HuiMember | undefined>(undefined);
   const [activeVietQRTx, setActiveVietQRTx] = useState<Transaction | null>(null);
+
+  // Handlers for P2P Loans
+  const handleCreateP2PLoan = (loan: Omit<P2PLoan, 'id' | 'createdAt' | 'status'>) => {
+    const newLoan: P2PLoan = {
+      ...loan,
+      id: `p2p_${Date.now()}`,
+      status: 'open',
+      createdAt: new Date().toISOString(),
+    };
+    setP2pLoans(prev => [newLoan, ...prev]);
+  };
+
+  const handleFundP2PLoan = (loanId: string) => {
+    if (!currentUser) return;
+    setP2pLoans(prev => prev.map(l => {
+      if (l.id === loanId) {
+        const fundedAt = new Date().toISOString();
+        const due = new Date();
+        due.setMonth(due.getMonth() + l.termMonths);
+        return {
+          ...l,
+          lenderId: currentUser.id,
+          lenderName: currentUser.name,
+          status: 'funded',
+          fundedAt,
+          dueDate: due.toISOString(),
+        };
+      }
+      return l;
+    }));
+  };
+
+  const handleRepayP2PLoan = (loanId: string) => {
+    setP2pLoans(prev => prev.map(l => {
+      if (l.id === loanId) {
+        return {
+          ...l,
+          status: 'repaid',
+          repaidAt: new Date().toISOString(),
+        };
+      }
+      return l;
+    }));
+  };
+
+  // Handlers for Maturity Savings Vaults
+  const handleCreateMaturityVault = (vault: Omit<MaturityVault, 'id' | 'completedCycles' | 'status' | 'startDate' | 'deposits'>) => {
+    const newVault: MaturityVault = {
+      ...vault,
+      id: `vault_${Date.now()}`,
+      completedCycles: 0,
+      status: 'active',
+      startDate: new Date().toISOString(),
+      deposits: [],
+    };
+    setMaturityVaults(prev => [newVault, ...prev]);
+  };
+
+  const handleDepositVaultCycle = (vaultId: string, amount: number) => {
+    setMaturityVaults(prev => prev.map(v => {
+      if (v.id === vaultId) {
+        const nextCycle = v.completedCycles + 1;
+        const newRecord = {
+          id: `dep_${Date.now()}`,
+          cycleNumber: nextCycle,
+          amount: amount,
+          date: new Date().toISOString().split('T')[0],
+          status: 'paid' as const,
+        };
+        const updatedCompleted = nextCycle;
+        const isMaturedNow = updatedCompleted >= v.targetCycles;
+
+        return {
+          ...v,
+          completedCycles: updatedCompleted,
+          status: isMaturedNow ? ('matured' as const) : v.status,
+          deposits: [...v.deposits, newRecord],
+        };
+      }
+      return v;
+    }));
+  };
+
+  const handleWithdrawMaturityVault = (vaultId: string) => {
+    setMaturityVaults(prev => prev.map(v => {
+      if (v.id === vaultId) {
+        return {
+          ...v,
+          status: 'withdrawn' as const,
+        };
+      }
+      return v;
+    }));
+  };
 
   // Update current user profile settings
   const handleUpdateUser = (updatedFields: Partial<User>) => {
@@ -245,6 +347,35 @@ export function App() {
       }
       return day;
     }));
+  };
+
+  // Feature toggle handler for Host (Chủ Hụi)
+  const handleToggleHuiFeature = (huiDayId: string, feature: 'p2p' | 'vault', enabled: boolean) => {
+    setHuiDays(prev => prev.map(day => {
+      if (day.id === huiDayId) {
+        return {
+          ...day,
+          allowP2pLending: feature === 'p2p' ? enabled : (day.allowP2pLending !== false),
+          allowMaturityVault: feature === 'vault' ? enabled : (day.allowMaturityVault !== false),
+        };
+      }
+      return day;
+    }));
+
+    const featureName = feature === 'p2p' ? 'Cho Vay Ngang Hàng (P2P)' : 'Góp Hũ Tích Lũy Mãn Hạn';
+    const statusText = enabled ? 'MỞ MẠNG HOẠT ĐỘNG' : 'TẠM ĐÓNG';
+
+    const chatMsg: ChatMessage = {
+      id: `msg_toggle_${Date.now()}`,
+      huiDayId: huiDayId,
+      senderId: 'sys',
+      senderName: 'Hệ Thống Sổ Hụi',
+      senderRole: 'system',
+      message: `📢 THÔNG BÁO CHỦ HỤI: Chức năng [${featureName}] đã được Chủ Hụi chuyển sang trạng thái: ${statusText}.`,
+      timestamp: new Date().toISOString(),
+      type: 'system_alert',
+    };
+    setChatMessages(prev => [...prev, chatMsg]);
   };
 
   // Ref for Carousel Scroll
@@ -594,6 +725,8 @@ export function App() {
         onOpenExploreModal={() => setIsExploreModalOpen(true)}
         onOpenBankConfigModal={() => setIsBankConfigModalOpen(true)}
         onOpenUserSettingsModal={() => setIsUserSettingsModalOpen(true)}
+        onOpenLiveBiddingModal={() => setIsLiveBiddingModalOpen(true)}
+        onOpenExtendedServicesModal={() => setIsExtendedServicesModalOpen(true)}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onLogout={async () => {
           await supabase.auth.signOut();
@@ -765,6 +898,8 @@ export function App() {
                 onOpenExploreModal={() => setIsExploreModalOpen(true)}
                 onOpenBankConfigModal={() => setIsBankConfigModalOpen(true)}
                 onOpenRegisterBankModal={handleOpenRegisterBankModal}
+                onOpenLiveBiddingModal={() => setIsLiveBiddingModalOpen(true)}
+                onOpenExtendedServicesModal={() => setIsExtendedServicesModalOpen(true)}
               />
             ) : (
               <HuiDetailView
@@ -784,8 +919,11 @@ export function App() {
                 onRejectMember={handleRejectMember}
                 onOpenBankConfigModal={() => setIsBankConfigModalOpen(true)}
                 onOpenRegisterBankModal={handleOpenRegisterBankModal}
+                onOpenLiveBiddingModal={() => setIsLiveBiddingModalOpen(true)}
+                onOpenExtendedServicesModal={() => setIsExtendedServicesModalOpen(true)}
                 onApproveMemberBank={handleApproveMemberBank}
                 onRejectMemberBank={handleRejectMemberBank}
+                onToggleHuiFeature={handleToggleHuiFeature}
               />
             )}
 
@@ -846,6 +984,39 @@ export function App() {
             onClose={() => setIsUserSettingsModalOpen(false)}
             currentUser={currentUser}
             onUpdateUser={handleUpdateUser}
+          />
+
+          {activeHuiDay && (
+            <LiveBiddingRoom
+              isOpen={isLiveBiddingModalOpen}
+              onClose={() => setIsLiveBiddingModalOpen(false)}
+              huiDay={activeHuiDay}
+              currentRound={activeRounds.find(r => r.roundNumber === activeHuiDay.currentRound) || activeRounds[activeRounds.length - 1]}
+              members={activeMembers}
+              bids={activeBids}
+              currentUser={currentUser}
+              onSubmitBid={handleSubmitBid}
+              onFinalizeRound={(roundId, amount, winnerId) => {
+                handleFinalizeRound(amount, winnerId);
+              }}
+            />
+          )}
+
+          <ExtendedFinancialServicesModal
+            isOpen={isExtendedServicesModalOpen}
+            onClose={() => setIsExtendedServicesModalOpen(false)}
+            currentUser={currentUser}
+            huiDays={huiDays}
+            p2pLoans={p2pLoans}
+            maturityVaults={maturityVaults}
+            activeHuiDay={activeHuiDay}
+            onToggleHuiFeature={handleToggleHuiFeature}
+            onCreateP2PLoan={handleCreateP2PLoan}
+            onFundP2PLoan={handleFundP2PLoan}
+            onRepayP2PLoan={handleRepayP2PLoan}
+            onCreateMaturityVault={handleCreateMaturityVault}
+            onDepositVaultCycle={handleDepositVaultCycle}
+            onWithdrawMaturityVault={handleWithdrawMaturityVault}
           />
         </>
       )}

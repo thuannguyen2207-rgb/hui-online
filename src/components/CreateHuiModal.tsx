@@ -35,6 +35,10 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
   // Tie break rule
   const [tieBreakRule, setTieBreakRule] = useState<TieBreakRule>('earliest');
   
+  // Feature Toggles Controlled By Host (Chủ Hụi)
+  const [allowP2pLending, setAllowP2pLending] = useState(true);
+  const [allowMaturityVault, setAllowMaturityVault] = useState(true);
+
   // Bank details for VietQR
   const [bankName, setBankName] = useState(currentUser.bankName || 'MB Bank');
   const [bankCode, setBankCode] = useState('MB');
@@ -77,6 +81,8 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
       },
       description,
       createdAt: new Date().toISOString(),
+      allowP2pLending,
+      allowMaturityVault,
     };
 
     onCreateHuiDay(newHuiDay);
@@ -353,6 +359,63 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
                   />
                   <span>2. Bốc thăm ngẫu nhiên tự động</span>
                 </label>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3.5: Cấu Hình Đóng/Mở Chức Năng Tài Chính Do Chủ Hụi Quản Lý */}
+          <div className="space-y-3 pt-3 border-t border-slate-800/80 bg-slate-950/60 p-3.5 rounded-2xl border border-amber-500/20">
+            <h4 className="text-xs font-bold uppercase tracking-wider text-amber-400 flex items-center justify-between">
+              <span className="flex items-center space-x-1.5">
+                <Sparkles className="h-4 w-4 text-amber-400" />
+                <span>Quyền Đóng / Mở Chức Năng Cho Vay & Góp Tích Lũy</span>
+              </span>
+              <span className="text-[10px] text-amber-300 font-normal">Do Chủ Hụi quyết định</span>
+            </h4>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
+              {/* Toggle 1: P2P Lending */}
+              <div 
+                onClick={() => setAllowP2pLending(!allowP2pLending)}
+                className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+                  allowP2pLending 
+                    ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-300' 
+                    : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                }`}
+              >
+                <div className="space-y-0.5">
+                  <div className="font-extrabold flex items-center space-x-1">
+                    <span>Cho Vay Ngang Hàng (P2P)</span>
+                  </div>
+                  <div className="text-[10px] text-slate-400">Cho phép hội viên vay / cấp vốn xoay vòng</div>
+                </div>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase shrink-0 ${
+                  allowP2pLending ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500/30 text-rose-300'
+                }`}>
+                  {allowP2pLending ? 'MỞ' : 'ĐÓNG'}
+                </span>
+              </div>
+
+              {/* Toggle 2: Maturity Vault (Góp Tích Lũy) */}
+              <div 
+                onClick={() => setAllowMaturityVault(!allowMaturityVault)}
+                className={`p-3 rounded-xl border cursor-pointer transition-all flex items-center justify-between ${
+                  allowMaturityVault 
+                    ? 'bg-emerald-500/10 border-emerald-500/50 text-emerald-300' 
+                    : 'bg-rose-500/10 border-rose-500/30 text-rose-400'
+                }`}
+              >
+                <div className="space-y-0.5">
+                  <div className="font-extrabold flex items-center space-x-1">
+                    <span>Hũ Tích Lũy Mãn Hạn (Góp)</span>
+                  </div>
+                  <div className="text-[10px] text-slate-400">Tích lũy góp tiền định kỳ khóa vốn</div>
+                </div>
+                <span className={`px-2 py-0.5 rounded-full text-[10px] font-black uppercase shrink-0 ${
+                  allowMaturityVault ? 'bg-emerald-500 text-slate-950' : 'bg-rose-500/30 text-rose-300'
+                }`}>
+                  {allowMaturityVault ? 'MỞ' : 'ĐÓNG'}
+                </span>
               </div>
             </div>
           </div>

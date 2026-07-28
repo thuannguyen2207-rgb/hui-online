@@ -28,7 +28,9 @@ import {
   CreditCard,
   Wallet,
   XCircle,
-  Plus
+  Plus,
+  Flame,
+  Landmark
 } from 'lucide-react';
 
 interface HuiDetailViewProps {
@@ -48,8 +50,11 @@ interface HuiDetailViewProps {
   onRejectMember?: (memberId: string) => void;
   onOpenBankConfigModal?: () => void;
   onOpenRegisterBankModal?: (targetMember?: HuiMember) => void;
+  onOpenLiveBiddingModal?: () => void;
+  onOpenExtendedServicesModal?: () => void;
   onApproveMemberBank?: (memberId: string) => void;
   onRejectMemberBank?: (memberId: string) => void;
+  onToggleHuiFeature?: (huiDayId: string, feature: 'p2p' | 'vault', enabled: boolean) => void;
 }
 
 export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
@@ -69,8 +74,11 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
   onRejectMember,
   onOpenBankConfigModal,
   onOpenRegisterBankModal,
+  onOpenLiveBiddingModal,
+  onOpenExtendedServicesModal,
   onApproveMemberBank,
   onRejectMemberBank,
+  onToggleHuiFeature,
 }) => {
   const [activeTab, setActiveTab] = useState<'ledger' | 'bidding' | 'chat' | 'config' | 'members'>('ledger');
   const [bidAmountInput, setBidAmountInput] = useState<number>(huiDay.shareAmount * 0.2); // Default ~20%
@@ -234,6 +242,26 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
             <Scale className="h-4 w-4" />
             <span>Phòng Đấu Hụi / Nộp Thăm ({bids.length})</span>
           </button>
+
+          {onOpenLiveBiddingModal && (
+            <button
+              onClick={onOpenLiveBiddingModal}
+              className="px-4 py-2 rounded-xl text-xs font-black bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-slate-950 shadow-lg shadow-rose-500/20 flex items-center space-x-1.5 transition-all shrink-0 animate-pulse active:scale-95"
+            >
+              <Flame className="h-4 w-4 text-slate-950 fill-current" />
+              <span>🔴 ĐẤU HỤI LIVE TRỰC TUYẾN</span>
+            </button>
+          )}
+
+          {onOpenExtendedServicesModal && (
+            <button
+              onClick={onOpenExtendedServicesModal}
+              className="px-4 py-2 rounded-xl text-xs font-extrabold bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 shadow-md flex items-center space-x-1.5 transition-all shrink-0 active:scale-95"
+            >
+              <Landmark className="h-4 w-4 text-emerald-400" />
+              <span>🏦 VAY P2P & HŨ MÃN HẠN</span>
+            </button>
+          )}
 
           <button
             onClick={() => setActiveTab('chat')}
@@ -712,6 +740,101 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
               <span className="text-xs text-slate-300 font-semibold uppercase block">
                 {huiDay.bankConfig.accountName} ({huiDay.bankConfig.bankName})
               </span>
+            </div>
+          </div>
+
+          {/* Feature Toggles Panel for Host (Chủ Hụi) */}
+          <div className="bg-slate-950 p-5 rounded-2xl border border-amber-500/30 space-y-4">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-slate-800 pb-3">
+              <div>
+                <h4 className="text-sm font-extrabold text-amber-400 flex items-center space-x-2">
+                  <Sparkles className="h-4 w-4 text-amber-400" />
+                  <span>Cấu Hình Bật / Tắt Chức Năng Tài Chính Mở Rộng</span>
+                </h4>
+                <p className="text-xs text-slate-400">
+                  Chủ Hụi có toàn quyền ĐÓNG hoặc MỞ dịch vụ Cho Vay Ngang Hàng & Góp Hũ Tích Lũy Mãn Hạn cho dây hụi này.
+                </p>
+              </div>
+
+              {(currentUser.role === 'chu_hui' || currentUser.id === huiDay.hostId) && (
+                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 font-extrabold px-2.5 py-1 rounded-lg border border-emerald-500/40 shrink-0 self-start sm:self-center">
+                  ● Quyền Hạn Chủ Hụi
+                </span>
+              )}
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {/* Feature 1: P2P Lending Toggle */}
+              <div className={`p-4 rounded-xl border transition-all flex items-center justify-between ${
+                huiDay.allowP2pLending !== false 
+                  ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
+                  : 'bg-rose-950/30 border-rose-500/30 text-rose-400'
+              }`}>
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-sm text-white">1. Cho Vay Ngang Hàng (P2P Lending)</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                      huiDay.allowP2pLending !== false ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                    }`}>
+                      {huiDay.allowP2pLending !== false ? 'ĐANG MỞ' : 'ĐÃ ĐÓNG'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    {huiDay.allowP2pLending !== false 
+                      ? 'Hội viên trong dây hụi được phép đăng bài vay / cấp vốn tín nhiệm cho nhau.'
+                      : 'Chức năng cho vay đã bị Chủ Hụi đóng. Hội viên không thể đăng yêu cầu vay mới.'}
+                  </p>
+                </div>
+
+                {(currentUser.role === 'chu_hui' || currentUser.id === huiDay.hostId) && onToggleHuiFeature && (
+                  <button
+                    onClick={() => onToggleHuiFeature(huiDay.id, 'p2p', huiDay.allowP2pLending === false)}
+                    className={`ml-3 px-3 py-2 rounded-xl text-xs font-black shadow-md transition-all shrink-0 ${
+                      huiDay.allowP2pLending !== false 
+                        ? 'bg-rose-500 hover:bg-rose-400 text-white' 
+                        : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                    }`}
+                  >
+                    {huiDay.allowP2pLending !== false ? 'TẠM ĐÓNG' : 'MỞ MẠNG'}
+                  </button>
+                )}
+              </div>
+
+              {/* Feature 2: Maturity Vault (Hũ Tích Lũy) Toggle */}
+              <div className={`p-4 rounded-xl border transition-all flex items-center justify-between ${
+                huiDay.allowMaturityVault !== false 
+                  ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-300'
+                  : 'bg-rose-950/30 border-rose-500/30 text-rose-400'
+              }`}>
+                <div className="space-y-1">
+                  <div className="flex items-center space-x-2">
+                    <span className="font-bold text-sm text-white">2. Góp Hũ Tích Lũy Mãn Hạn</span>
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-black uppercase ${
+                      huiDay.allowMaturityVault !== false ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'
+                    }`}>
+                      {huiDay.allowMaturityVault !== false ? 'ĐANG MỞ' : 'ĐÃ ĐÓNG'}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400">
+                    {huiDay.allowMaturityVault !== false 
+                      ? 'Hội viên được phép đăng ký góp hũ tiết kiệm mãn hạn dây hụi để hưởng lãi thưởng.'
+                      : 'Chức năng hũ tích lũy đã bị Chủ Hụi đóng. Hội viên không thể mở hũ tích lũy mới.'}
+                  </p>
+                </div>
+
+                {(currentUser.role === 'chu_hui' || currentUser.id === huiDay.hostId) && onToggleHuiFeature && (
+                  <button
+                    onClick={() => onToggleHuiFeature(huiDay.id, 'vault', huiDay.allowMaturityVault === false)}
+                    className={`ml-3 px-3 py-2 rounded-xl text-xs font-black shadow-md transition-all shrink-0 ${
+                      huiDay.allowMaturityVault !== false 
+                        ? 'bg-rose-500 hover:bg-rose-400 text-white' 
+                        : 'bg-emerald-500 hover:bg-emerald-400 text-slate-950'
+                    }`}
+                  >
+                    {huiDay.allowMaturityVault !== false ? 'TẠM ĐÓNG' : 'MỞ MẠNG'}
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>

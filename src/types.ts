@@ -57,6 +57,8 @@ export interface HuiDay {
   bankConfig: BankConfig;
   description?: string;
   createdAt: string;
+  allowP2pLending?: boolean; // Tùy chọn đóng/mở Cho Vay Ngang Hàng do Chủ Hụi quản lý
+  allowMaturityVault?: boolean; // Tùy chọn đóng/mở Hũ Tích Lũy Mãn Hạn do Chủ Hụi quản lý
 }
 
 export type MemberStatus = 'pending' | 'approved' | 'rejected';
@@ -168,3 +170,51 @@ export interface CalculationBreakdown {
   winnerCurrentRoundDuty: number; // Tiền người thắng phải đóng kỳ này (Thường là 1 phần Hụi Sống V - T hoặc V)
   netPayoutR: number; // R = (Dead x V) + (Live x (V - T)) - Phí Thảo - Tiền Đóng Kỳ Hiện Tại
 }
+
+export type P2PLoanStatus = 'open' | 'funded' | 'repaid' | 'cancelled';
+
+export interface P2PLoan {
+  id: string;
+  borrowerId: string;
+  borrowerName: string;
+  borrowerAvatar?: string;
+  lenderId?: string;
+  lenderName?: string;
+  amount: number;
+  interestRateYearly: number; // %/năm (e.g. 12 = 12%/năm)
+  termMonths: number; // Thời hạn vay (tháng)
+  purpose: string; // Mục đích vay (góp hụi, kinh doanh xoay vốn...)
+  collateralNote: string; // Thế chấp suất hụi / Thỏa thuận tín nhiệm
+  status: P2PLoanStatus;
+  createdAt: string;
+  fundedAt?: string;
+  dueDate?: string;
+  repaidAt?: string;
+}
+
+export interface VaultDepositRecord {
+  id: string;
+  cycleNumber: number;
+  amount: number;
+  date: string;
+  status: 'paid' | 'pending';
+  paymentProofUrl?: string;
+}
+
+export interface MaturityVault {
+  id: string;
+  userId: string;
+  userName: string;
+  huiDayId?: string;
+  huiDayName?: string;
+  vaultName: string; // Tên hũ tiết kiệm (e.g. "Hũ Tích Lũy Mãn Hạn Dây Hụi T3")
+  targetCycles: number; // Tổng số kỳ phải tích lũy (e.g. 12 kỳ)
+  completedCycles: number; // Số kỳ đã nộp đúng hạn
+  amountPerCycle: number; // Số tiền tích lũy mỗi kỳ (e.g. 1,000,000 đ)
+  bonusInterestRate: number; // Lãi suất thưởng khi rút đúng mãn hạn (%/năm, e.g. 8.5%/năm)
+  status: 'active' | 'matured' | 'withdrawn';
+  startDate: string;
+  maturityDate: string; // Ngày mãn hạn rút tiền
+  deposits: VaultDepositRecord[];
+}
+

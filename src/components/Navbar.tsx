@@ -13,7 +13,9 @@ import {
   HelpCircle,
   Coins,
   QrCode,
-  Settings
+  Settings,
+  Flame,
+  Landmark
 } from 'lucide-react';
 
 interface NavbarProps {
@@ -27,6 +29,8 @@ interface NavbarProps {
   onOpenExploreModal?: () => void;
   onOpenBankConfigModal?: () => void;
   onOpenUserSettingsModal?: () => void;
+  onOpenLiveBiddingModal?: () => void;
+  onOpenExtendedServicesModal?: () => void;
   onOpenAuthModal: () => void;
   onLogout?: () => void;
 }
@@ -42,6 +46,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenExploreModal,
   onOpenBankConfigModal,
   onOpenUserSettingsModal,
+  onOpenLiveBiddingModal,
+  onOpenExtendedServicesModal,
   onOpenAuthModal,
   onLogout,
 }) => {
@@ -106,6 +112,35 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <Coins className="h-4 w-4 text-amber-400" />
                 <span className="hidden md:inline">Khám Phá Dây Hụi</span>
                 <span className="md:hidden">Tìm Dây</span>
+              </button>
+            )}
+
+            {/* EXTENDED FINANCIAL SERVICES SHORTCUT (P2P LENDING & MATURITY VAULTS) */}
+            {onOpenExtendedServicesModal && (
+              <button
+                onClick={onOpenExtendedServicesModal}
+                className="bg-emerald-950/90 hover:bg-emerald-900 text-emerald-400 border border-emerald-500/40 hover:border-emerald-400 font-extrabold text-xs sm:text-sm px-3 sm:px-3.5 py-2 rounded-xl shadow-md flex items-center space-x-1.5 transition-all active:scale-95"
+                title="Mở Dịch Vụ Cho Vay P2P & Hũ Tích Lũy Mãn Hạn"
+              >
+                <Landmark className="h-4 w-4 text-emerald-400" />
+                <span className="hidden lg:inline">Dịch Vụ Mở Rộng (P2P & Hũ Mãn Hạn)</span>
+                <span className="lg:hidden">P2P & Hũ Hụi</span>
+              </button>
+            )}
+
+            {/* LIVE BIDDING ROOM SHORTCUT */}
+            {onOpenLiveBiddingModal && (
+              <button
+                onClick={onOpenLiveBiddingModal}
+                className="relative bg-gradient-to-r from-rose-600 via-rose-500 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-slate-950 font-black text-xs sm:text-sm px-3 sm:px-3.5 py-2 rounded-xl shadow-lg shadow-rose-500/20 flex items-center space-x-1.5 transition-all active:scale-95"
+                title="Mở Sàn Đấu Hụi Trực Tuyến Live"
+              >
+                <Flame className="h-4 w-4 text-slate-950 animate-bounce" />
+                <span>ĐẤU HỤI LIVE</span>
+                <span className="relative flex h-2 w-2">
+                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-slate-950 opacity-75"></span>
+                  <span className="relative inline-flex rounded-full h-2 w-2 bg-slate-950"></span>
+                </span>
               </button>
             )}
 

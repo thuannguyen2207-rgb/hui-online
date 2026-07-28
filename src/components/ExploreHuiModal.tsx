@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { HuiDay, HuiMember, User, CycleType } from '../types';
 import { formatVND, getCycleTypeLabel } from '../utils/huiFinancialEngine';
+import { ElectronicContractModal, ContractActionContext } from './ElectronicContractModal';
 import { 
   Search, 
   Coins, 
@@ -78,6 +79,10 @@ export const ExploreHuiModal: React.FC<ExploreHuiModalProps> = ({
   const [faceVerified, setFaceVerified] = useState(true);
 
   const [successMsg, setSuccessMsg] = useState<string>('');
+  const [pendingContract, setPendingContract] = useState<{
+    context: ContractActionContext;
+    onConfirm: () => void;
+  } | null>(null);
 
   if (!isOpen) return null;
 
@@ -123,25 +128,36 @@ export const ExploreHuiModal: React.FC<ExploreHuiModalProps> = ({
       return;
     }
 
-    onRequestJoin(
-      requestingHui.id, 
-      sharesCount, 
-      joinNote,
-      idCardNumber.trim(),
-      frontImage,
-      backImage,
-      'verified'
-    );
-    
-    setSuccessMsg(`Đã gửi hồ sơ xác minh eKYC & đăng ký ${sharesCount} phần dây "${requestingHui.name}". Vui lòng chờ Chủ Hụi duyệt!`);
-    
-    setTimeout(() => {
-      setSuccessMsg('');
-      setRequestingHui(null);
-      setRequestStep(1);
-      setSharesCount(1);
-      setJoinNote('');
-    }, 2000);
+    setPendingContract({
+      context: {
+        title: 'HỢP ĐỒNG ĐIỆN TỬ ĐĂNG KÝ THAM GIA DÂY HỤI',
+        actionType: 'hui_join',
+        partnerName: 'Công Ty Quản Lý Tín Dụng & Ngân Hàng Liên Kết (Bên Thứ Ba)',
+        summaryText: `Đăng ký ${sharesCount} phần dây hụi '${requestingHui.name}' (Mã dây: ${requestingHui.inviteCode}). Số tiền/kỳ: ${(requestingHui.shareAmount * sharesCount).toLocaleString('vi-VN')} đ`,
+        amount: requestingHui.shareAmount * sharesCount,
+      },
+      onConfirm: () => {
+        onRequestJoin(
+          requestingHui.id, 
+          sharesCount, 
+          joinNote,
+          idCardNumber.trim(),
+          frontImage,
+          backImage,
+          'verified'
+        );
+        
+        setSuccessMsg(`Đã ký hợp đồng & gửi hồ sơ xác minh eKYC đăng ký ${sharesCount} phần dây "${requestingHui.name}". Vui lòng chờ Chủ Hụi duyệt!`);
+        
+        setTimeout(() => {
+          setSuccessMsg('');
+          setRequestingHui(null);
+          setRequestStep(1);
+          setSharesCount(1);
+          setJoinNote('');
+        }, 2000);
+      }
+    });
   };
 
   // Direct Join By Invite Code
@@ -759,6 +775,22 @@ export const ExploreHuiModal: React.FC<ExploreHuiModalProps> = ({
         )}
 
       </div>
+
+      {/* ELECTRONIC CONTRACT MODAL */}
+      {pendingContract && (
+        <ElectronicContractModal
+          isOpen={!!pendingContract}
+          onClose={() => setPendingContract(null)}
+          onAccept={() => {
+            if (pendingContract) {
+              pendingContract.onConfirm();
+              setPendingContract(null);
+            }
+          }}
+          currentUser={currentUser}
+          context={pendingContract.context}
+        />
+      )}
     </div>
   );
 };

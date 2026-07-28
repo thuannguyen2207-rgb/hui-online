@@ -24,7 +24,9 @@ import {
   History,
   Lock,
   ArrowRight,
-  Plus
+  Plus,
+  Flame,
+  Landmark
 } from 'lucide-react';
 
 interface MemberDashboardViewProps {
@@ -42,6 +44,8 @@ interface MemberDashboardViewProps {
   onOpenExploreModal?: () => void;
   onOpenBankConfigModal?: () => void;
   onOpenRegisterBankModal?: (targetMember?: HuiMember) => void;
+  onOpenLiveBiddingModal?: () => void;
+  onOpenExtendedServicesModal?: () => void;
 }
 
 export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
@@ -59,6 +63,8 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
   onOpenExploreModal,
   onOpenBankConfigModal,
   onOpenRegisterBankModal,
+  onOpenLiveBiddingModal,
+  onOpenExtendedServicesModal,
 }) => {
   const [activeSubTab, setActiveSubTab] = useState<'my_status' | 'bid_portal' | 'public_ledger' | 'chat'>('my_status');
   const [bidAmountInput, setBidAmountInput] = useState<number>(huiDay.shareAmount * 0.15); // ~15% default
@@ -212,6 +218,26 @@ export const MemberDashboardView: React.FC<MemberDashboardViewProps> = ({
             <span>Nộp Thăm Bí Mật</span>
             {myCurrentBid && <span className="w-2 h-2 rounded-full bg-emerald-400"></span>}
           </button>
+
+          {onOpenLiveBiddingModal && (
+            <button
+              onClick={onOpenLiveBiddingModal}
+              className="px-4 py-2.5 rounded-xl text-xs font-black bg-gradient-to-r from-rose-600 to-amber-500 hover:from-rose-500 hover:to-amber-400 text-slate-950 shadow-lg shadow-rose-500/20 flex items-center space-x-1.5 transition-all shrink-0 animate-pulse active:scale-95"
+            >
+              <Flame className="h-4 w-4 text-slate-950 fill-current" />
+              <span>🔴 ĐẤU HỤI LIVE TRỰC TUYẾN</span>
+            </button>
+          )}
+
+          {onOpenExtendedServicesModal && (
+            <button
+              onClick={onOpenExtendedServicesModal}
+              className="px-4 py-2.5 rounded-xl text-xs font-extrabold bg-emerald-950/80 hover:bg-emerald-900 border border-emerald-500/40 text-emerald-400 shadow-md flex items-center space-x-1.5 transition-all shrink-0 active:scale-95"
+            >
+              <Landmark className="h-4 w-4 text-emerald-400" />
+              <span>🏦 VAY P2P & HŨ MÃN HẠN</span>
+            </button>
+          )}
 
           <button
             onClick={() => setActiveSubTab('public_ledger')}
