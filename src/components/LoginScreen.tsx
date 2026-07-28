@@ -288,8 +288,11 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
         accountName: regName.trim().toUpperCase()
       };
 
-      // Upsert user and password to Supabase
-      await upsertUserInSupabase(newUser, regPassword);
+      // The account is not considered registered until its pending profile is persisted.
+      const registration = await upsertUserInSupabase(newUser, regPassword);
+      if (!registration.success) {
+        throw new Error(registration.error || 'Không thể lưu yêu cầu đăng ký.');
+      }
 
       setSuccessMsg('Đăng ký tài khoản thành công! Đang chuyển tới trang chờ Chủ Hụi phê duyệt...');
       setTimeout(() => onLoginSuccess(newUser), 400);

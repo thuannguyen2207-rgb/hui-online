@@ -95,6 +95,20 @@ export function App() {
     loadDataFromSupabase();
   }, []);
 
+  // Keep the host approval queue current while the modal is open.
+  useEffect(() => {
+    if (!isPendingUsersModalOpen || currentUser?.role !== 'chu_hui') return;
+
+    const refreshUsers = async () => {
+      const users = await fetchUsersFromSupabase();
+      setAllUsers(users);
+    };
+
+    void refreshUsers();
+    const interval = window.setInterval(() => void refreshUsers(), 10_000);
+    return () => window.clearInterval(interval);
+  }, [isPendingUsersModalOpen, currentUser?.role]);
+
   // Handle Login or Registration Success
   const handleLoginOrRegisterSuccess = (user: User) => {
     const isSuperAdmin = user.email?.toLowerCase() === 'thuan.nguyen2207@gmail.com' || user.id === 'u_super_admin_thuan';
