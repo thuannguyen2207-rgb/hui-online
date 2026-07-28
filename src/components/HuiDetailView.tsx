@@ -107,10 +107,23 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
   // Validate Bid Input
   const bidValidation = validateBidAmount(bidAmountInput, huiDay);
 
+  const getInviteUrl = () => {
+    let origin = '';
+    if (typeof window !== 'undefined' && window.location?.origin) {
+      origin = window.location.origin;
+    } else if (process.env.NEXT_PUBLIC_APP_URL) {
+      origin = process.env.NEXT_PUBLIC_APP_URL;
+    } else {
+      origin = 'https://tingbooks.net';
+    }
+    return `${origin}/join/${huiDay.inviteCode}`;
+  };
+
   const handleCopyInviteLink = () => {
-    navigator.clipboard.writeText(`https://hui.app/join/${huiDay.inviteCode}`);
+    const inviteUrl = getInviteUrl();
+    navigator.clipboard.writeText(inviteUrl);
     setCopiedLink(true);
-    setTimeout(() => setCopiedLink(false), 1500);
+    setTimeout(() => setCopiedLink(false), 2500);
   };
 
   const handleSendChat = (e: React.FormEvent) => {
@@ -210,12 +223,14 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
               <input
                 type="text"
                 readOnly
-                value={`https://hui.app/join/${huiDay.inviteCode}`}
-                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-300 font-mono truncate"
+                value={getInviteUrl()}
+                onClick={handleCopyInviteLink}
+                className="w-full bg-slate-900 border border-slate-800 rounded-lg px-2.5 py-1.5 text-[11px] text-amber-300 font-mono truncate cursor-pointer select-all"
               />
               <button
                 onClick={handleCopyInviteLink}
-                className="p-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg font-bold text-xs transition-all flex items-center shrink-0"
+                title="Sao chép link mời"
+                className="p-2 bg-amber-500 hover:bg-amber-400 text-slate-950 rounded-lg font-bold text-xs transition-all flex items-center shrink-0 active:scale-95"
               >
                 {copiedLink ? <CheckCircle2 className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
               </button>
@@ -223,6 +238,14 @@ export const HuiDetailView: React.FC<HuiDetailViewProps> = ({
           </div>
 
         </div>
+
+        {/* Floating Toast Notification for Link Copy */}
+        {copiedLink && (
+          <div className="fixed bottom-6 right-6 z-50 bg-emerald-500 text-slate-950 font-black px-4 py-3 rounded-2xl shadow-2xl flex items-center space-x-2 border border-emerald-400 animate-bounce">
+            <CheckCircle2 className="h-5 w-5 text-slate-950 shrink-0" />
+            <span className="text-xs">Đã sao chép link mời</span>
+          </div>
+        )}
 
         {/* NAVIGATION SUB-TABS */}
         <div className="flex items-center space-x-2 border-t border-slate-800/80 pt-4 mt-6 overflow-x-auto">

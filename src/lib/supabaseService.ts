@@ -11,12 +11,30 @@ export async function fetchUsersFromSupabase(): Promise<User[]> {
       .select('*')
       .order('created_at', { ascending: false });
 
-    if (error || !data) {
+    if (error || !data || data.length === 0) {
       const { data: usersData, error: usersErr } = await supabase
         .from('users')
         .select('*');
       
-      if (usersErr || !usersData) return [];
+      if (usersErr || !usersData || usersData.length === 0) {
+        // Seed default host user in Supabase if empty
+        const defaultHost: User = {
+          id: 'u_host_1',
+          phone: '0908123456',
+          email: 'chuhui@gmail.com',
+          name: 'Trần Thị Thu (Chủ Hụi)',
+          role: 'chu_hui',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          verified: true,
+          accountApprovalStatus: 'approved',
+          bankName: 'MB Bank',
+          bankCode: 'MB',
+          accountNumber: '0908123456888',
+          accountName: 'TRẦN THỊ THU'
+        };
+        await upsertUserInSupabase(defaultHost, '123456');
+        return [defaultHost];
+      }
       return usersData.map(mapDbUserToUser);
     }
 
@@ -27,9 +45,116 @@ export async function fetchUsersFromSupabase(): Promise<User[]> {
   }
 }
 
-export async function upsertUserInSupabase(user: User): Promise<boolean> {
+export async function loginWithSupabasePassword(
+  identifier: string,
+  password: string
+): Promise<{ success: boolean; user?: User; error?: string }> {
   try {
-    const payload = {
+    const cleanTarget = identifier.trim().toLowerCase();
+    const cleanPhoneTarget = cleanTarget.replace(/\s+|-|\(|\)/g, '');
+
+    // 1. Query profiles table
+    let { data: profileData } = await supabase
+      .from('profiles')
+      .select('*');
+
+    let userRow: any = null;
+
+    if (profileData && profileData.length > 0) {
+      userRow = profileData.find((u: any) => {
+        const uPhone = (u.phone || '').trim().toLowerCase().replace(/\s+|-|\(|\)/g, '');
+        const uEmail = (u.email || '').trim().toLowerCase();
+        return uPhone === cleanPhoneTarget || uEmail === cleanTarget;
+      });
+    }
+
+    // 2. Query users table fallback if not found in profiles
+    if (!userRow) {
+      const { data: usersData } = await supabase
+        .from('users')
+        .select('*');
+
+      if (usersData && usersData.length > 0) {
+        userRow = usersData.find((u: any) => {
+          const uPhone = (u.phone || '').trim().toLowerCase().replace(/\s+|-|\(|\)/g, '');
+          const uEmail = (u.email || '').trim().toLowerCase();
+          return uPhone === cleanPhoneTarget || uEmail === cleanTarget;
+        });
+      }
+    }
+
+    // 3. Fallback direct SQL query
+    if (!userRow) {
+      const { data: directData } = await supabase
+        .from('profiles')
+        .select('*')
+        .or(`phone.eq.${cleanTarget},email.eq.${cleanTarget}`);
+
+      if (directData && directData.length > 0) {
+        userRow = directData[0];
+      } else {
+        const { data: directUsersData } = await supabase
+          .from('users')
+          .select('*')
+          .or(`phone.eq.${cleanTarget},email.eq.${cleanTarget}`);
+        if (directUsersData && directUsersData.length > 0) {
+          userRow = directUsersData[0];
+        }
+      }
+    }
+
+    // YÊU CẦU 2: Nếu sai số điện thoại (không tìm thấy người dùng trong Supabase)
+    if (!userRow) {
+      return {
+        success: false,
+        error: 'Số điện thoại hoặc Email không tồn tại trong hệ thống Supabase. Vui lòng kiểm tra lại hoặc Đăng ký mới.'
+      };
+    }
+
+    // YÊU CẦU 1 & 2: Kiểm tra mật khẩu trong dữ liệu Supabase
+    const dbPassword = userRow.password || userRow.password_hash || userRow.pass;
+
+    if (dbPassword !== undefined && dbPassword !== null && dbPassword !== '') {
+      if (dbPassword !== password) {
+        return {
+          success: false,
+          error: 'Mật khẩu không chính xác. Vui lòng kiểm tra lại.'
+        };
+      }
+    } else {
+      // Fallback if password column is not present in row, try Supabase Auth or standard default check
+      if (userRow.email) {
+        const { data: authData, error: authErr } = await supabase.auth.signInWithPassword({
+          email: userRow.email,
+          password: password
+        });
+        if (authErr && !authData?.session) {
+          return {
+            success: false,
+            error: 'Mật khẩu không chính xác. Vui lòng kiểm tra lại.'
+          };
+        }
+      }
+    }
+
+    // YÊU CẦU 3: Chỉ cho phép đăng nhập khi thông tin khớp hoàn toàn với dữ liệu trong Supabase
+    const matchedUser = mapDbUserToUser(userRow);
+    return {
+      success: true,
+      user: matchedUser
+    };
+  } catch (err: any) {
+    console.error('Supabase login exception:', err);
+    return {
+      success: false,
+      error: 'Không thể kết nối đến máy chủ Supabase. Vui lòng kiểm tra lại kết nối mạng.'
+    };
+  }
+}
+
+export async function upsertUserInSupabase(user: User, password?: string): Promise<boolean> {
+  try {
+    const payload: any = {
       id: user.id,
       phone: user.phone,
       email: user.email || null,
@@ -46,6 +171,10 @@ export async function upsertUserInSupabase(user: User): Promise<boolean> {
       updated_at: new Date().toISOString()
     };
 
+    if (password) {
+      payload.password = password;
+    }
+
     const { error } = await supabase
       .from('profiles')
       .upsert(payload, { onConflict: 'id' });
@@ -53,8 +182,7 @@ export async function upsertUserInSupabase(user: User): Promise<boolean> {
     if (error) {
       console.warn('First profile upsert failed, attempting fallback on profiles/users:', error.message || error);
       
-      // Fallback 1: Minimal payload on profiles (in case some optional columns like address/bank_code don't exist in DB schema)
-      const minimalPayload = {
+      const minimalPayload: any = {
         id: user.id,
         phone: user.phone,
         email: user.email || null,
@@ -64,12 +192,15 @@ export async function upsertUserInSupabase(user: User): Promise<boolean> {
         updated_at: new Date().toISOString()
       };
 
+      if (password) {
+        minimalPayload.password = password;
+      }
+
       const { error: minErr } = await supabase
         .from('profiles')
         .upsert(minimalPayload, { onConflict: 'id' });
 
       if (minErr) {
-        // Fallback 2: Try users table if profiles table is named 'users' in Supabase
         await supabase
           .from('users')
           .upsert(minimalPayload, { onConflict: 'id' });

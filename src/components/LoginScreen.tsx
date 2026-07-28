@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { User, UserRole } from '../types';
 import { supabase } from '../lib/supabase';
+import { loginWithSupabasePassword, upsertUserInSupabase } from '../lib/supabaseService';
 import { AddressPickerModal } from './AddressPickerModal';
 import { QUICK_PRESET_ADDRESSES } from '../data/addressData';
 import { 
@@ -66,12 +67,12 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   };
 
   // 1. HANDLE LOGIN WITH PASSWORD
-  const handlePasswordLogin = (e: React.FormEvent) => {
+  const handlePasswordLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
 
-    const target = loginIdentifier.trim().toLowerCase();
+    const target = loginIdentifier.trim();
     if (!target) {
       setErrorMsg('Vui lòng nhập Số điện thoại hoặc Email');
       return;
@@ -82,26 +83,24 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-      const isHost = target.includes('chuhui') || target === '0908123456';
-      const matched: User = {
-        id: isHost ? 'u_host_1' : `u_${Date.now()}`,
-        phone: target.includes('@') ? '0908123456' : target,
-        email: target.includes('@') ? target : `${target}@gmail.com`,
-        name: isHost ? 'Trần Thị Thu (Chủ Hụi)' : 'Hội Viên Trực Tuyến',
-        role: isHost ? 'chu_hui' : 'hui_vien',
-        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-        verified: true,
-        accountApprovalStatus: isHost ? 'approved' : 'approved',
-        bankName: 'MB Bank',
-        accountNumber: '0908123456888',
-        accountName: isHost ? 'TRẦN THỊ THU' : 'HỘI VIÊN TRỰC TUYẾN'
-      };
+    try {
+      // Gọi Supabase để kiểm tra Số điện thoại / Email và Mật khẩu trong bảng người dùng
+      const res = await loginWithSupabasePassword(target, loginPassword);
+      
+      if (!res.success || !res.user) {
+        setErrorMsg(res.error || 'Số điện thoại hoặc mật khẩu không chính xác.');
+        setLoading(false);
+        return;
+      }
 
       setSuccessMsg('Đăng nhập thành công!');
-      setTimeout(() => onLoginSuccess(matched), 300);
-    }, 400);
+      setTimeout(() => onLoginSuccess(res.user!), 300);
+    } catch (err) {
+      console.error('Password login error:', err);
+      setErrorMsg('Không thể xác thực thông tin đăng nhập với Supabase.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   // 2. SEND OTP FOR LOGIN OR REGISTER
@@ -233,7 +232,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   };
 
   // 5. VERIFY REGISTER OTP CODE
-  const handleVerifyRegisterOtp = (e: React.FormEvent) => {
+  const handleVerifyRegisterOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg('');
     setSuccessMsg('');
@@ -244,8 +243,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     }
 
     setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
+    try {
       const newUser: User = {
         id: `u_reg_${Date.now()}`,
         phone: regPhone.trim() || '0908889999',
@@ -262,9 +260,17 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         accountName: regName.trim().toUpperCase()
       };
 
+      // Upsert user and password to Supabase
+      await upsertUserInSupabase(newUser, regPassword);
+
       setSuccessMsg('Đăng ký tài khoản thành công! Đang chuyển tới trang chờ Chủ Hụi phê duyệt...');
       setTimeout(() => onLoginSuccess(newUser), 400);
-    }, 500);
+    } catch (err) {
+      console.error('Register error:', err);
+      setErrorMsg('Đã xảy ra lỗi khi tạo tài khoản trên Supabase. Vui lòng thử lại.');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

@@ -78,7 +78,7 @@ export const API_ENDPOINTS_LIST: ApiEndpointSpec[] = [
       data: {
         hui_day_id: 'day_78a1f29b-8890-4e2b-a128-89c0a3771901',
         invite_code: 'HUI8899',
-        invite_link: 'https://hui.app/join/HUI8899',
+        invite_link: 'https://tingbooks.net/join/HUI8899',
         created_at: '2026-07-23T05:32:00Z',
       },
     },
