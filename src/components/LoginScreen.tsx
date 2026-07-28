@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { User, UserRole } from '../types';
-import { MOCK_USERS } from '../data/mockData';
 import { supabase } from '../lib/supabase';
 import { AddressPickerModal } from './AddressPickerModal';
 import { QUICK_PRESET_ADDRESSES } from '../data/addressData';
@@ -34,9 +33,7 @@ interface LoginScreenProps {
 }
 
 export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
-  const [authTab, setAuthTab] = useState<'login' | 'register' | 'demo'>('login');
-  const [loginMethod, setLoginMethod] = useState<'password' | 'otp'>('password');
-  
+  const [authTab, setAuthTab] = useState<'login' | 'register'>('login');
   // Login State
   const [loginIdentifier, setLoginIdentifier] = useState('0908123456');
   const [loginPassword, setLoginPassword] = useState('123456');
@@ -62,7 +59,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   const [successMsg, setSuccessMsg] = useState('');
 
   // Clear messages on tab change
-  const handleTabChange = (tab: 'login' | 'register' | 'demo') => {
+  const handleTabChange = (tab: 'login' | 'register') => {
     setAuthTab(tab);
     setErrorMsg('');
     setSuccessMsg('');
@@ -87,19 +84,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
     setLoading(true);
     setTimeout(() => {
       setLoading(false);
-      const matched = MOCK_USERS.find(
-        u => u.phone === target || (u.email && u.email.toLowerCase() === target)
-      ) || {
-        id: `user_${Date.now()}`,
-        phone: target.includes('@') ? '0901234567' : target,
+      const isHost = target.includes('chuhui') || target === '0908123456';
+      const matched: User = {
+        id: isHost ? 'u_host_1' : `u_${Date.now()}`,
+        phone: target.includes('@') ? '0908123456' : target,
         email: target.includes('@') ? target : `${target}@gmail.com`,
-        name: target.includes('chuhui') || target === '0908123456' ? 'Trần Thị Thu (Chủ Hụi)' : 'Nguyễn Văn An (Hội Viên)',
-        role: target.includes('chuhui') || target === '0908123456' ? 'chu_hui' : 'hui_vien',
+        name: isHost ? 'Trần Thị Thu (Chủ Hụi)' : 'Hội Viên Trực Tuyến',
+        role: isHost ? 'chu_hui' : 'hui_vien',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
         verified: true,
+        accountApprovalStatus: isHost ? 'approved' : 'approved',
         bankName: 'MB Bank',
         accountNumber: '0908123456888',
-        accountName: 'TRẦN THỊ THU'
+        accountName: isHost ? 'TRẦN THỊ THU' : 'HỘI VIÊN TRỰC TUYẾN'
       };
 
       setSuccessMsg('Đăng nhập thành công!');
@@ -172,9 +169,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           type: 'email'
         });
         if (data?.user) {
-          const matchedUser: User = MOCK_USERS.find(
-            u => u.email?.toLowerCase() === otpTarget.toLowerCase()
-          ) || {
+          const matchedUser: User = {
             id: data.user.id,
             phone: '0908123456',
             email: otpTarget,
@@ -182,6 +177,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             role: 'hui_vien',
             avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
             verified: true,
+            accountApprovalStatus: 'approved',
             bankName: 'MB Bank',
             accountNumber: '0908123456888',
             accountName: otpTarget.split('@')[0].toUpperCase()
@@ -193,19 +189,19 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
       }
 
       // Default fallback / phone OTP validation
-      const matchedUser: User = MOCK_USERS.find(
-        u => u.phone === otpTarget || u.email?.toLowerCase() === otpTarget.toLowerCase()
-      ) || {
-        id: `user_${Date.now()}`,
+      const isHostTarget = otpTarget.includes('chuhui') || otpTarget === '0908123456';
+      const matchedUser: User = {
+        id: isHostTarget ? 'u_host_1' : `user_${Date.now()}`,
         phone: otpTarget.includes('@') ? '0901234567' : otpTarget,
         email: otpTarget.includes('@') ? otpTarget : `${otpTarget}@gmail.com`,
-        name: 'Hội Viên Mới',
-        role: 'hui_vien',
+        name: isHostTarget ? 'Trần Thị Thu (Chủ Hụi)' : 'Hội Viên Mới',
+        role: isHostTarget ? 'chu_hui' : 'hui_vien',
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
         verified: true,
+        accountApprovalStatus: 'approved',
         bankName: 'MB Bank',
         accountNumber: '0908123456888',
-        accountName: 'HỘI VIÊN MỚI'
+        accountName: isHostTarget ? 'TRẦN THỊ THU' : 'HỘI VIÊN MỚI'
       };
 
       setSuccessMsg('Xác thực OTP thành công!');
@@ -314,44 +310,31 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 shadow-2xl space-y-5">
           
           {/* Main Navigation Tabs */}
-          <div className="grid grid-cols-3 gap-1 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 text-xs font-bold">
+          <div className="grid grid-cols-2 gap-1 bg-slate-950 p-1.5 rounded-2xl border border-slate-800 text-xs font-bold">
             <button
               type="button"
               onClick={() => handleTabChange('login')}
-              className={`py-2 px-1 rounded-xl transition-all flex items-center justify-center space-x-1 ${
+              className={`py-2.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 ${
                 authTab === 'login'
-                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <LogIn className="h-3.5 w-3.5 shrink-0" />
+              <LogIn className="h-4 w-4 shrink-0" />
               <span>Đăng Nhập</span>
             </button>
 
             <button
               type="button"
               onClick={() => handleTabChange('register')}
-              className={`py-2 px-1 rounded-xl transition-all flex items-center justify-center space-x-1 ${
+              className={`py-2.5 px-2 rounded-xl transition-all flex items-center justify-center space-x-1.5 ${
                 authTab === 'register'
-                  ? 'bg-amber-500 text-slate-950 shadow-md'
+                  ? 'bg-amber-500 text-slate-950 shadow-md font-extrabold'
                   : 'text-slate-400 hover:text-white'
               }`}
             >
-              <UserPlus className="h-3.5 w-3.5 shrink-0" />
+              <UserPlus className="h-4 w-4 shrink-0" />
               <span>Đăng Ký Mới</span>
-            </button>
-
-            <button
-              type="button"
-              onClick={() => handleTabChange('demo')}
-              className={`py-2 px-1 rounded-xl transition-all flex items-center justify-center space-x-1 ${
-                authTab === 'demo'
-                  ? 'bg-amber-500 text-slate-950 shadow-md'
-                  : 'text-slate-400 hover:text-white'
-              }`}
-            >
-              <Zap className="h-3.5 w-3.5 shrink-0" />
-              <span>Demo</span>
             </button>
           </div>
 
@@ -371,197 +354,67 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
           {/* TAB 1: ĐĂNG NHẬP (LOGIN) */}
           {authTab === 'login' && (
             <div className="space-y-4">
-              
-              {/* Login Sub-toggle: Password vs OTP */}
-              <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-800 text-[11px] font-bold">
-                <button
-                  type="button"
-                  onClick={() => { setLoginMethod('password'); setIsOtpSent(false); setErrorMsg(''); setSuccessMsg(''); }}
-                  className={`flex-1 py-1.5 rounded-lg transition-all ${
-                    loginMethod === 'password' ? 'bg-slate-800 text-amber-400 font-black' : 'text-slate-400'
-                  }`}
-                >
-                  Đăng Nhập Mật Khẩu
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setLoginMethod('otp'); setIsOtpSent(false); setErrorMsg(''); setSuccessMsg(''); }}
-                  className={`flex-1 py-1.5 rounded-lg transition-all ${
-                    loginMethod === 'otp' ? 'bg-slate-800 text-amber-400 font-black' : 'text-slate-400'
-                  }`}
-                >
-                  Đăng Nhập Mã OTP 6 Số
-                </button>
-              </div>
-
-              {loginMethod === 'password' ? (
-                /* Password Login Form */
-                <form onSubmit={handlePasswordLogin} className="space-y-4">
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Số Điện Thoại hoặc Email
-                    </label>
-                    <div className="relative">
-                      <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-400" />
-                      <input
-                        type="text"
-                        value={loginIdentifier}
-                        onChange={(e) => setLoginIdentifier(e.target.value)}
-                        placeholder="VD: 0908123456 hoặc email@gmail.com"
-                        required
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-amber-500"
-                      />
-                    </div>
+              {/* Password Login Form */}
+              <form onSubmit={handlePasswordLogin} className="space-y-4">
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Số Điện Thoại hoặc Email
+                  </label>
+                  <div className="relative">
+                    <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-400" />
+                    <input
+                      type="text"
+                      value={loginIdentifier}
+                      onChange={(e) => setLoginIdentifier(e.target.value)}
+                      placeholder="VD: 0908123456 hoặc email@gmail.com"
+                      required
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-amber-500"
+                    />
                   </div>
-
-                  <div>
-                    <label className="block text-xs font-semibold text-slate-300 mb-1">
-                      Mật Khẩu
-                    </label>
-                    <div className="relative">
-                      <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
-                      <input
-                        type={showPassword ? 'text' : 'password'}
-                        value={loginPassword}
-                        onChange={(e) => setLoginPassword(e.target.value)}
-                        placeholder="••••••••"
-                        required
-                        className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-amber-500"
-                      />
-                      <button
-                        type="button"
-                        onClick={() => setShowPassword(!showPassword)}
-                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
-                      >
-                        {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
-                      </button>
-                    </div>
-                  </div>
-
-                  <button
-                    type="submit"
-                    disabled={loading}
-                    className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold py-3 px-4 rounded-xl shadow-xl shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all text-sm active:scale-98"
-                  >
-                    {loading ? (
-                      <span className="flex items-center space-x-2">
-                        <RefreshCw className="h-4 w-4 animate-spin" />
-                        <span>Đang đăng nhập...</span>
-                      </span>
-                    ) : (
-                      <>
-                        <span>ĐĂNG NHẬP NGAY</span>
-                        <ArrowRight className="h-4 w-4" />
-                      </>
-                    )}
-                  </button>
-                </form>
-              ) : (
-                /* OTP Code Login Form */
-                <div className="space-y-4">
-                  {!isOtpSent ? (
-                    <form onSubmit={(e) => { e.preventDefault(); handleSendOtp(otpTarget || loginIdentifier); }} className="space-y-4">
-                      <div>
-                        <label className="block text-xs font-semibold text-slate-300 mb-1">
-                          Nhập SĐT hoặc Email để nhận mã OTP:
-                        </label>
-                        <div className="relative">
-                          <MessageSquareCode className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-amber-400" />
-                          <input
-                            type="text"
-                            value={otpTarget || loginIdentifier}
-                            onChange={(e) => setOtpTarget(e.target.value)}
-                            placeholder="0908123456 hoặc name@gmail.com"
-                            required
-                            className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-4 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-amber-500"
-                          />
-                        </div>
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={loading}
-                        className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold py-3 px-4 rounded-xl shadow-xl shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all text-sm"
-                      >
-                        {loading ? (
-                          <span className="flex items-center space-x-2">
-                            <RefreshCw className="h-4 w-4 animate-spin" />
-                            <span>Đang gửi mã...</span>
-                          </span>
-                        ) : (
-                          <>
-                            <span>GỬI MÃ XÁC MINH OTP</span>
-                            <Send className="h-4 w-4" />
-                          </>
-                        )}
-                      </button>
-                    </form>
-                  ) : (
-                    /* Enter 6-digit OTP Input */
-                    <form onSubmit={handleVerifyLoginOtp} className="space-y-4 animate-fade-in">
-                      <div className="text-center space-y-1">
-                        <p className="text-xs text-slate-300">
-                          Mã xác minh 6 chữ số đã được gửi tới:
-                        </p>
-                        <p className="font-mono text-amber-400 font-bold text-sm">
-                          {otpTarget}
-                        </p>
-                      </div>
-
-                      <div>
-                        <label className="block text-xs font-bold text-slate-300 mb-2 text-center">
-                          Nhập Mã OTP 6 Số:
-                        </label>
-                        <input
-                          type="text"
-                          maxLength={6}
-                          value={otpCode}
-                          onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
-                          placeholder="123456"
-                          required
-                          className="w-full bg-slate-950 border border-slate-800 focus:border-amber-500 rounded-xl py-3 text-center text-2xl font-mono tracking-[0.4em] text-amber-400 focus:outline-none"
-                        />
-                      </div>
-
-                      <button
-                        type="submit"
-                        disabled={loading || otpCode.length < 6}
-                        className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-extrabold py-3 px-4 rounded-xl flex items-center justify-center space-x-2 transition-all text-sm disabled:opacity-50"
-                      >
-                        {loading ? (
-                          <span className="flex items-center space-x-2">
-                            <RefreshCw className="h-4 w-4 animate-spin" />
-                            <span>Đang kiểm tra OTP...</span>
-                          </span>
-                        ) : (
-                          <>
-                            <span>XÁC NHẬN MÃ OTP & ĐĂNG NHẬP</span>
-                            <CheckCircle2 className="h-4 w-4" />
-                          </>
-                        )}
-                      </button>
-
-                      <div className="flex justify-between items-center text-xs text-slate-400 pt-1">
-                        <button
-                          type="button"
-                          onClick={() => { setIsOtpSent(false); setOtpCode(''); }}
-                          className="hover:text-amber-400 underline"
-                        >
-                          ← Nhập lại SĐT / Email
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleSendOtp(otpTarget)}
-                          className="hover:text-emerald-400 underline"
-                        >
-                          Gửi lại mã OTP
-                        </button>
-                      </div>
-                    </form>
-                  )}
                 </div>
-              )}
 
+                <div>
+                  <label className="block text-xs font-semibold text-slate-300 mb-1">
+                    Mật Khẩu
+                  </label>
+                  <div className="relative">
+                    <KeyRound className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      value={loginPassword}
+                      onChange={(e) => setLoginPassword(e.target.value)}
+                      placeholder="••••••••"
+                      required
+                      className="w-full bg-slate-950 border border-slate-800 rounded-xl pl-10 pr-10 py-2.5 text-white font-mono text-sm focus:outline-none focus:border-amber-500"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-slate-500 hover:text-slate-300"
+                    >
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold py-3 px-4 rounded-xl shadow-xl shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all text-sm active:scale-98"
+                >
+                  {loading ? (
+                    <span className="flex items-center space-x-2">
+                      <RefreshCw className="h-4 w-4 animate-spin" />
+                      <span>Đang đăng nhập...</span>
+                    </span>
+                  ) : (
+                    <>
+                      <span>ĐĂNG NHẬP NGAY</span>
+                      <ArrowRight className="h-4 w-4" />
+                    </>
+                  )}
+                </button>
+              </form>
             </div>
           )}
 
@@ -573,7 +426,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                 <form onSubmit={handleRegisterSubmit} className="space-y-3.5">
                   <div className="text-center pb-1">
                     <h2 className="text-base font-extrabold text-white">Đăng Ký Tài Khoản Mới</h2>
-                    <p className="text-xs text-slate-400">Điền thông tin cá nhân và nhận mã OTP xác minh</p>
+                    <p className="text-xs text-slate-400">Điền thông tin cá nhân để tạo tài khoản gửi Chủ Hụi duyệt</p>
                   </div>
 
                   {/* Full Name */}
@@ -717,7 +570,7 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                       </span>
                     ) : (
                       <>
-                        <span>ĐĂNG KÝ & LẤY MÃ XÁC MINH OTP</span>
+                        <span>ĐĂNG KÝ & CHỜ DUYỆT</span>
                         <Send className="h-4 w-4" />
                       </>
                     )}
@@ -787,99 +640,6 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
               )}
             </div>
           )}
-
-          {/* TAB 3: DEMO QUICK LOGIN */}
-          {authTab === 'demo' && (
-            <div className="space-y-3">
-              <div className="text-center space-y-1">
-                <h2 className="text-base font-bold text-white">Vào Nhanh Bằng Tài Khoản Mẫu</h2>
-                <p className="text-xs text-slate-400">
-                  Thử nghiệm giao diện Chủ Hụi hoặc Hội Viên ngay lập tức
-                </p>
-              </div>
-
-              <button
-                type="button"
-                onClick={() => onLoginSuccess(MOCK_USERS[0])}
-                className="w-full p-3.5 bg-slate-950 hover:bg-slate-800/80 border border-emerald-500/40 rounded-2xl text-left transition-all group flex items-center justify-between"
-              >
-                <div className="flex items-center space-x-3">
-                  <img
-                    src={MOCK_USERS[0].avatar}
-                    alt={MOCK_USERS[0].name}
-                    className="h-10 w-10 rounded-xl object-cover ring-2 ring-emerald-500/50"
-                  />
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold text-xs text-white">{MOCK_USERS[0].name}</span>
-                      <span className="px-2 py-0.5 rounded text-[9px] font-extrabold bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                        Chủ Hụi
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-400 font-mono space-x-2">
-                      <span>SĐT: {MOCK_USERS[0].phone}</span>
-                    </div>
-                  </div>
-                </div>
-                <ArrowRight className="h-4 w-4 text-emerald-400 group-hover:translate-x-1 transition-transform shrink-0" />
-              </button>
-
-              <button
-                type="button"
-                onClick={() => onLoginSuccess(MOCK_USERS[1])}
-                className="w-full p-3.5 bg-slate-950 hover:bg-slate-800/80 border border-blue-500/40 rounded-2xl text-left transition-all group flex items-center justify-between"
-              >
-                <div className="flex items-center space-x-3">
-                  <img
-                    src={MOCK_USERS[1].avatar}
-                    alt={MOCK_USERS[1].name}
-                    className="h-10 w-10 rounded-xl object-cover ring-2 ring-blue-500/50"
-                  />
-                  <div>
-                    <div className="flex items-center space-x-2">
-                      <span className="font-bold text-xs text-white">{MOCK_USERS[1].name}</span>
-                      <span className="px-2 py-0.5 rounded text-[9px] font-extrabold bg-blue-500/20 text-blue-400 border border-blue-500/30">
-                        Hội Viên
-                      </span>
-                    </div>
-                    <div className="text-[11px] text-slate-400 font-mono space-x-2">
-                      <span>SĐT: {MOCK_USERS[1].phone}</span>
-                    </div>
-                  </div>
-                </div>
-                <ArrowRight className="h-4 w-4 text-blue-400 group-hover:translate-x-1 transition-transform shrink-0" />
-              </button>
-
-              {MOCK_USERS[6] && (
-                <button
-                  type="button"
-                  onClick={() => onLoginSuccess(MOCK_USERS[6])}
-                  className="w-full p-3.5 bg-slate-950 hover:bg-slate-800/80 border border-amber-500/40 rounded-2xl text-left transition-all group flex items-center justify-between"
-                >
-                  <div className="flex items-center space-x-3">
-                    <img
-                      src={MOCK_USERS[6].avatar}
-                      alt={MOCK_USERS[6].name}
-                      className="h-10 w-10 rounded-xl object-cover ring-2 ring-amber-500/50"
-                    />
-                    <div>
-                      <div className="flex items-center space-x-2">
-                        <span className="font-bold text-xs text-white">{MOCK_USERS[6].name}</span>
-                        <span className="px-2 py-0.5 rounded text-[9px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">
-                          Chờ Chủ Hụi Duyệt
-                        </span>
-                      </div>
-                      <div className="text-[11px] text-slate-400 font-mono space-x-2">
-                        <span>SĐT: {MOCK_USERS[6].phone}</span>
-                      </div>
-                    </div>
-                  </div>
-                  <ArrowRight className="h-4 w-4 text-amber-400 group-hover:translate-x-1 transition-transform shrink-0" />
-                </button>
-              )}
-            </div>
-          )}
-
         </div>
 
         {/* Footer Note */}

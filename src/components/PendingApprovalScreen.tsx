@@ -6,14 +6,12 @@ interface PendingApprovalScreenProps {
   currentUser: User;
   onRefreshStatus: () => void;
   onLogout: () => void;
-  onSwitchToDemoHost?: () => void;
 }
 
 export const PendingApprovalScreen: React.FC<PendingApprovalScreenProps> = ({
   currentUser,
   onRefreshStatus,
-  onLogout,
-  onSwitchToDemoHost
+  onLogout
 }) => {
   const [checking, setChecking] = useState(false);
   const isRejected = currentUser.accountApprovalStatus === 'rejected';
@@ -149,17 +147,6 @@ export const PendingApprovalScreen: React.FC<PendingApprovalScreenProps> = ({
             <RefreshCw className={`h-4 w-4 ${checking ? 'animate-spin' : ''}`} />
             <span>{checking ? 'Đang Kiểm Tra Trạng Thái Duyệt...' : 'Kiểm Tra Trạng Thái Phê Duyệt Ngay'}</span>
           </button>
-
-          {/* Switch to Demo Host mode if requested */}
-          {onSwitchToDemoHost && (
-            <button
-              onClick={onSwitchToDemoHost}
-              className="w-full bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold py-2.5 px-4 rounded-xl text-xs flex items-center justify-center space-x-2 transition-all"
-            >
-              <ShieldCheck className="h-4 w-4" />
-              <span>Chuyển Sang Quyền Chủ Hụi Để Duyệt Ngay (Demo Mode)</span>
-            </button>
-          )}
 
           {/* Logout */}
           <button

@@ -668,7 +668,7 @@ export const ExploreHuiModal: React.FC<ExploreHuiModalProps> = ({
                           <button
                             type="button"
                             onClick={() => {
-                              const newUrl = prompt('Nhập URL ảnh mặt trước CCCD hoặc tải ảnh demo mới:', frontImage);
+                              const newUrl = prompt('Nhập URL ảnh mặt trước CCCD mới:', frontImage);
                               if (newUrl) setFrontImage(newUrl);
                             }}
                             className="px-2.5 py-1 bg-amber-500 text-slate-950 font-bold text-[10px] rounded-lg flex items-center space-x-1"
@@ -692,7 +692,7 @@ export const ExploreHuiModal: React.FC<ExploreHuiModalProps> = ({
                           <button
                             type="button"
                             onClick={() => {
-                              const newUrl = prompt('Nhập URL ảnh mặt sau CCCD hoặc tải ảnh demo mới:', backImage);
+                              const newUrl = prompt('Nhập URL ảnh mặt sau CCCD mới:', backImage);
                               if (newUrl) setBackImage(newUrl);
                             }}
                             className="px-2.5 py-1 bg-amber-500 text-slate-950 font-bold text-[10px] rounded-lg flex items-center space-x-1"

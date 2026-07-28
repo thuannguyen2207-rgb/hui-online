@@ -1,8 +1,18 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { Bid, BankConfig, ChatMessage, HuiDay, HuiMember, HuiRound, Transaction, User, UserRole, P2PLoan, MaturityVault } from './types';
-import { MOCK_BIDS, MOCK_CHAT_MESSAGES, MOCK_HUI_DAYS, MOCK_MEMBERS, MOCK_ROUNDS, MOCK_TRANSACTIONS, MOCK_USERS, MOCK_P2P_LOANS, MOCK_MATURITY_VAULTS } from './data/mockData';
 import { calculateMemberStates, calculateRoundPayout, formatVND, generateVietQRUrl, getCycleTypeLabel } from './utils/huiFinancialEngine';
 import { supabase } from './lib/supabase';
+import {
+  fetchUsersFromSupabase,
+  fetchHuiDaysFromSupabase,
+  fetchMembersFromSupabase,
+  fetchTransactionsFromSupabase,
+  createHuiDayInSupabase,
+  updateUserApprovalStatusInSupabase,
+  upsertUserInSupabase,
+  createTransactionInSupabase
+} from './lib/supabaseService';
+import { EmptyHuiState } from './components/EmptyHuiState';
 import { Navbar } from './components/Navbar';
 import { LoginScreen } from './components/LoginScreen';
 import { PhoneAuthModal } from './components/PhoneAuthModal';
@@ -34,11 +44,58 @@ export function App() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Users List State (including newly registered users & approval statuses)
-  const [allUsers, setAllUsers] = useState<User[]>(MOCK_USERS);
+  const [allUsers, setAllUsers] = useState<User[]>([]);
   const [isPendingUsersModalOpen, setIsPendingUsersModalOpen] = useState(false);
+
+  // Hui System Data State
+  const [huiDays, setHuiDays] = useState<HuiDay[]>([]);
+  const [selectedHuiDayId, setSelectedHuiDayId] = useState<string>('');
+  const [members, setMembers] = useState<HuiMember[]>([]);
+  const [rounds, setRounds] = useState<HuiRound[]>([]);
+  const [bids, setBids] = useState<Bid[]>([]);
+  const [transactions, setTransactions] = useState<Transaction[]>([]);
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([]);
+  const [isLoadingSupabase, setIsLoadingSupabase] = useState(true);
+
+  // Fetch initial state directly from Supabase
+  useEffect(() => {
+    async function loadDataFromSupabase() {
+      setIsLoadingSupabase(true);
+      try {
+        const [dbUsers, dbHuiDays, dbMembers, dbTx] = await Promise.all([
+          fetchUsersFromSupabase(),
+          fetchHuiDaysFromSupabase(),
+          fetchMembersFromSupabase(),
+          fetchTransactionsFromSupabase()
+        ]);
+
+        if (dbUsers && dbUsers.length > 0) {
+          setAllUsers(dbUsers);
+        }
+        if (dbHuiDays && dbHuiDays.length > 0) {
+          setHuiDays(dbHuiDays);
+          setSelectedHuiDayId(dbHuiDays[0].id);
+        } else {
+          setHuiDays([]);
+          setSelectedHuiDayId('');
+        }
+        setMembers(dbMembers || []);
+        setTransactions(dbTx || []);
+      } catch (err) {
+        console.warn('Supabase initialization warning:', err);
+      } finally {
+        setIsLoadingSupabase(false);
+      }
+    }
+
+    loadDataFromSupabase();
+  }, []);
 
   // Handle Login or Registration Success
   const handleLoginOrRegisterSuccess = (user: User) => {
+    // Persist to Supabase in background
+    upsertUserInSupabase(user);
+
     setAllUsers(prev => {
       const exists = prev.some(u => u.id === user.id || u.phone === user.phone || (u.email && user.email && u.email.toLowerCase() === user.email.toLowerCase()));
       if (exists) {
@@ -70,6 +127,7 @@ export function App() {
 
   // Host approves a pending user account
   const handleApproveUserAccount = (userId: string) => {
+    updateUserApprovalStatusInSupabase(userId, 'approved');
     setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, accountApprovalStatus: 'approved' } : u));
     if (currentUser?.id === userId) {
       setCurrentUser(prev => prev ? { ...prev, accountApprovalStatus: 'approved' } : null);
@@ -78,6 +136,7 @@ export function App() {
 
   // Host rejects a pending user account
   const handleRejectUserAccount = (userId: string) => {
+    updateUserApprovalStatusInSupabase(userId, 'rejected');
     setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, accountApprovalStatus: 'rejected' } : u));
     if (currentUser?.id === userId) {
       setCurrentUser(prev => prev ? { ...prev, accountApprovalStatus: 'rejected' } : null);
@@ -132,18 +191,9 @@ export function App() {
     return () => subscription.unsubscribe();
   }, [allUsers]);
 
-  // Hui System Data State
-  const [huiDays, setHuiDays] = useState<HuiDay[]>(MOCK_HUI_DAYS);
-  const [selectedHuiDayId, setSelectedHuiDayId] = useState<string>(MOCK_HUI_DAYS[0].id);
-  const [members, setMembers] = useState<HuiMember[]>(MOCK_MEMBERS);
-  const [rounds, setRounds] = useState<HuiRound[]>(MOCK_ROUNDS);
-  const [bids, setBids] = useState<Bid[]>(MOCK_BIDS);
-  const [transactions, setTransactions] = useState<Transaction[]>(MOCK_TRANSACTIONS);
-  const [chatMessages, setChatMessages] = useState<ChatMessage[]>(MOCK_CHAT_MESSAGES);
-
   // Extended Financial Services State
-  const [p2pLoans, setP2pLoans] = useState<P2PLoan[]>(MOCK_P2P_LOANS);
-  const [maturityVaults, setMaturityVaults] = useState<MaturityVault[]>(MOCK_MATURITY_VAULTS);
+  const [p2pLoans, setP2pLoans] = useState<P2PLoan[]>([]);
+  const [maturityVaults, setMaturityVaults] = useState<MaturityVault[]>([]);
 
   // Modals
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
@@ -452,7 +502,7 @@ export function App() {
   }
 
   // Active Selected Hui Day
-  const activeHuiDay = huiDays.find(d => d.id === selectedHuiDayId) || huiDays[0] || MOCK_HUI_DAYS[0];
+  const activeHuiDay = huiDays.find(d => d.id === selectedHuiDayId) || huiDays[0] || null;
 
   // Filtered relations for active Hui Day
   const activeMembers = activeHuiDay ? members.filter(m => m.huiDayId === activeHuiDay.id) : [];
@@ -463,15 +513,18 @@ export function App() {
 
   // Switch Role
   const handleSwitchRole = (role: UserRole) => {
-    if (role === 'chu_hui') {
-      setCurrentUser(MOCK_USERS[0]);
-    } else {
-      setCurrentUser(MOCK_USERS[1]);
-    }
+    if (!currentUser) return;
+    const updatedUser = { ...currentUser, role };
+    setCurrentUser(updatedUser);
+    setAllUsers(prev => prev.map(u => u.id === currentUser.id ? updatedUser : u));
+    upsertUserInSupabase(updatedUser);
   };
 
   // Create New Hui Day
   const handleCreateHuiDay = (newDay: HuiDay) => {
+    // Persist to Supabase
+    createHuiDayInSupabase(newDay);
+
     setHuiDays([newDay, ...huiDays]);
     setSelectedHuiDayId(newDay.id);
 
@@ -803,13 +856,19 @@ export function App() {
               await supabase.auth.signOut();
               setCurrentUser(null);
             }}
-            onSwitchToDemoHost={() => setCurrentUser(allUsers[0])}
           />
         ) : activeView === 'app' ? (
           <MobileContainer isMobileFrame={isMobileFrame}>
-            
-            {/* Hui Day Selector Toolbar Container with Left / Right Scroll Controls */}
-            <div className="mb-6 bg-slate-900/90 border border-slate-800 rounded-2xl p-3 shadow-xl space-y-2">
+            {huiDays.length === 0 || !activeHuiDay ? (
+              <EmptyHuiState
+                currentUser={currentUser}
+                onCreateHuiClick={() => setIsCreateModalOpen(true)}
+                onExploreHuiClick={() => setIsExploreModalOpen(true)}
+              />
+            ) : (
+              <>
+                {/* Hui Day Selector Toolbar Container with Left / Right Scroll Controls */}
+                <div className="mb-6 bg-slate-900/90 border border-slate-800 rounded-2xl p-3 shadow-xl space-y-2">
               <div className="flex items-center justify-between px-1">
                 <div className="flex items-center space-x-2 text-xs font-bold text-slate-300">
                   <Coins className="h-4 w-4 text-amber-400" />
@@ -994,6 +1053,8 @@ export function App() {
                 onRejectMemberBank={handleRejectMemberBank}
                 onToggleHuiFeature={handleToggleHuiFeature}
               />
+            )}
+              </>
             )}
 
           </MobileContainer>
