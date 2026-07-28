@@ -235,7 +235,13 @@ export function App() {
     if (!isExploreModalOpen) return;
 
     void fetchHuiDaysFromSupabase().then((groups) => {
-      setHuiDays(groups);
+      if (groups.length === 0) return;
+
+      setHuiDays((currentGroups) => {
+        const groupsById = new Map(currentGroups.map((group) => [group.id, group]));
+        groups.forEach((group) => groupsById.set(group.id, group));
+        return Array.from(groupsById.values());
+      });
     });
   }, [isExploreModalOpen]);
 
