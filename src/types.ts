@@ -19,6 +19,8 @@ export interface User {
   bankConfig?: BankConfig;
   pendingBankConfig?: BankConfig;
   bankApprovalStatus?: 'none' | 'pending' | 'approved' | 'rejected';
+  accountApprovalStatus?: 'approved' | 'pending_approval' | 'rejected';
+  registeredAt?: string;
 }
 
 export type CycleType = 'daily' | 'weekly' | 'ten_days' | 'half_month' | 'monthly' | 'custom';

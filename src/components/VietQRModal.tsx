@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Transaction } from '../types';
 import { formatVND, generateVietQRUrl } from '../utils/huiFinancialEngine';
-import { X, Copy, CheckCircle2, QrCode, Building2, UploadCloud, ArrowDown, ShieldCheck } from 'lucide-react';
+import { PolicyTermsModal } from './PolicyTermsModal';
+import { X, Copy, CheckCircle2, QrCode, Building2, UploadCloud, ArrowDown, ShieldCheck, Scale, ExternalLink } from 'lucide-react';
 
 interface VietQRModalProps {
   isOpen: boolean;
@@ -27,8 +28,9 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
   const [copiedAccount, setCopiedAccount] = useState(false);
   const [copiedAmount, setCopiedAmount] = useState(false);
   const [copiedRef, setCopiedRef] = useState(false);
-  const [proofUploaded, setProofUploaded] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [agreedTerms, setAgreedTerms] = useState(false);
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
 
   if (!isOpen || !transaction) return null;
 
@@ -148,8 +150,33 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
 
         </div>
 
+        {/* Policy Checkbox Before Transaction Confirmation */}
+        {transaction.status === 'unpaid' && (
+          <div className="mt-4 p-3 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+            <label className="flex items-start space-x-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreedTerms}
+                onChange={(e) => setAgreedTerms(e.target.checked)}
+                className="mt-0.5 h-4 w-4 rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900"
+              />
+              <span className="text-[11px] text-slate-300 leading-tight">
+                Tôi cam kết đã chuyển đúng số tiền & đúng nội dung giao dịch gạch nợ hụi theo{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsPolicyModalOpen(true)}
+                  className="text-amber-400 underline hover:text-amber-300 font-bold inline-flex items-center space-x-0.5"
+                >
+                  <span>Quy định NĐ 19/2019/NĐ-CP</span>
+                  <ExternalLink className="h-3 w-3" />
+                </button>
+              </span>
+            </label>
+          </div>
+        )}
+
         {/* Action Button */}
-        <div className="mt-5 space-y-2">
+        <div className="mt-4 space-y-2">
           {transaction.status === 'confirmed' ? (
             <div className="p-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center text-emerald-400 font-bold text-xs flex items-center justify-center space-x-2">
               <ShieldCheck className="h-5 w-5 text-emerald-400" />
@@ -163,8 +190,12 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
           ) : (
             <button
               onClick={handleConfirmPayment}
-              disabled={loading}
-              className="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-3 px-4 rounded-xl shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-2 transition-all"
+              disabled={loading || !agreedTerms}
+              className={`w-full font-bold py-3 px-4 rounded-xl shadow-lg flex items-center justify-center space-x-2 transition-all ${
+                agreedTerms && !loading
+                  ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 shadow-emerald-500/20'
+                  : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+              }`}
             >
               {loading ? (
                 <span>Đang gửi xác nhận...</span>
@@ -177,6 +208,13 @@ export const VietQRModal: React.FC<VietQRModalProps> = ({
             </button>
           )}
         </div>
+
+        {/* Policy Terms Modal */}
+        <PolicyTermsModal
+          isOpen={isPolicyModalOpen}
+          onClose={() => setIsPolicyModalOpen(false)}
+          onAgree={() => setAgreedTerms(true)}
+        />
 
       </div>
     </div>

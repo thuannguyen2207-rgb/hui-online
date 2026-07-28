@@ -31,6 +31,8 @@ interface NavbarProps {
   onOpenUserSettingsModal?: () => void;
   onOpenLiveBiddingModal?: () => void;
   onOpenExtendedServicesModal?: () => void;
+  onOpenPendingUsersModal?: () => void;
+  pendingUsersCount?: number;
   onOpenAuthModal: () => void;
   onLogout?: () => void;
 }
@@ -48,6 +50,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   onOpenUserSettingsModal,
   onOpenLiveBiddingModal,
   onOpenExtendedServicesModal,
+  onOpenPendingUsersModal,
+  pendingUsersCount = 0,
   onOpenAuthModal,
   onLogout,
 }) => {
@@ -275,6 +279,26 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Exclusive Chủ Hụi Actions */}
             {currentUser.role === 'chu_hui' && (
               <>
+                {onOpenPendingUsersModal && (
+                  <button
+                    onClick={onOpenPendingUsersModal}
+                    className={`relative px-3 py-1.5 rounded-xl font-bold flex items-center space-x-1.5 transition-all active:scale-95 border ${
+                      pendingUsersCount > 0
+                        ? 'bg-amber-500 text-slate-950 border-amber-400 shadow-lg shadow-amber-500/20'
+                        : 'bg-slate-950 text-slate-300 hover:text-white border-slate-800'
+                    }`}
+                    title="Duyệt tài khoản đăng ký mới"
+                  >
+                    <ShieldCheck className="h-3.5 w-3.5" />
+                    <span>Duyệt TK Mới</span>
+                    {pendingUsersCount > 0 && (
+                      <span className="bg-rose-600 text-white text-[10px] font-black px-1.5 py-0.2 rounded-full animate-pulse border border-rose-400">
+                        {pendingUsersCount}
+                      </span>
+                    )}
+                  </button>
+                )}
+
                 {onOpenBankConfigModal && (
                   <button
                     onClick={onOpenBankConfigModal}

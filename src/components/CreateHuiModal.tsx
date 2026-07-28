@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { BidLimitType, CycleType, FeeType, HuiDay, TieBreakRule, User } from '../types';
 import { formatVND } from '../utils/huiFinancialEngine';
-import { PlusCircle, X, ShieldAlert, Sparkles, Building2, Percent, DollarSign, Calendar, Scale } from 'lucide-react';
+import { PolicyTermsModal } from './PolicyTermsModal';
+import { PlusCircle, X, ShieldAlert, Sparkles, Building2, Percent, DollarSign, Calendar, Scale, ExternalLink, ShieldCheck } from 'lucide-react';
 
 interface CreateHuiModalProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
   const [shareAmount, setShareAmount] = useState(5000000);
   const [cycleType, setCycleType] = useState<CycleType>('weekly');
   const [cycleDays, setCycleDays] = useState(7);
+  const [agreedPolicy, setAgreedPolicy] = useState(false);
+  const [isPolicyModalOpen, setIsPolicyModalOpen] = useState(false);
   
   // Fee configuration
   const [feeType, setFeeType] = useState<FeeType>('percent_value');
@@ -464,15 +467,51 @@ export const CreateHuiModal: React.FC<CreateHuiModalProps> = ({
             </div>
           </div>
 
+          {/* Policy & Host Responsibility Commitment */}
+          <div className="p-3.5 bg-slate-950 border border-slate-800 rounded-xl space-y-2">
+            <label className="flex items-start space-x-2.5 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={agreedPolicy}
+                onChange={(e) => setAgreedPolicy(e.target.checked)}
+                required
+                className="mt-0.5 h-4 w-4 rounded border-slate-700 bg-slate-900 text-amber-500 focus:ring-amber-500 focus:ring-offset-slate-900"
+              />
+              <span className="text-[11px] text-slate-300 leading-tight">
+                Tôi xác nhận làm Chủ Hụi và cam kết thực hiện đúng nghĩa vụ quản lý dây hụi, giao tiền hốt hụi đúng hạn theo{' '}
+                <button
+                  type="button"
+                  onClick={() => setIsPolicyModalOpen(true)}
+                  className="text-amber-400 underline hover:text-amber-300 font-bold inline-flex items-center space-x-0.5"
+                >
+                  <span>Quy định Pháp lý & Nghị định 19/2019/NĐ-CP</span>
+                  <ExternalLink className="h-3 w-3" />
+                </button>
+              </span>
+            </label>
+          </div>
+
           <button
             type="submit"
-            className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold py-3.5 px-4 rounded-xl shadow-xl shadow-amber-500/20 flex items-center justify-center space-x-2 transition-all active:scale-98"
+            disabled={!agreedPolicy}
+            className={`w-full font-bold py-3.5 px-4 rounded-xl shadow-xl flex items-center justify-center space-x-2 transition-all active:scale-98 ${
+              agreedPolicy
+                ? 'bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 shadow-amber-500/20'
+                : 'bg-slate-800 text-slate-500 border border-slate-700 cursor-not-allowed'
+            }`}
           >
-            <Sparkles className="h-5 w-5 text-slate-950" />
+            <Sparkles className="h-5 w-5" />
             <span>Xác Nhận Tạo Dây Hụi & Sinh Mã Mời</span>
           </button>
 
         </form>
+
+        {/* Policy Terms Modal */}
+        <PolicyTermsModal
+          isOpen={isPolicyModalOpen}
+          onClose={() => setIsPolicyModalOpen(false)}
+          onAgree={() => setAgreedPolicy(true)}
+        />
 
       </div>
     </div>

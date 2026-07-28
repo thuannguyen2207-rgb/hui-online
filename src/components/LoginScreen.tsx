@@ -259,12 +259,14 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
         address: regAddress.trim(),
         avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
         verified: true,
+        accountApprovalStatus: 'pending_approval',
+        registeredAt: new Date().toISOString(),
         bankName: 'MB Bank',
         accountNumber: '0908889999123',
         accountName: regName.trim().toUpperCase()
       };
 
-      setSuccessMsg('Tạo tài khoản và xác minh OTP thành công!');
+      setSuccessMsg('Đăng ký tài khoản thành công! Đang chuyển tới trang chờ Chủ Hụi phê duyệt...');
       setTimeout(() => onLoginSuccess(newUser), 400);
     }, 500);
   };
@@ -847,6 +849,34 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
                 </div>
                 <ArrowRight className="h-4 w-4 text-blue-400 group-hover:translate-x-1 transition-transform shrink-0" />
               </button>
+
+              {MOCK_USERS[6] && (
+                <button
+                  type="button"
+                  onClick={() => onLoginSuccess(MOCK_USERS[6])}
+                  className="w-full p-3.5 bg-slate-950 hover:bg-slate-800/80 border border-amber-500/40 rounded-2xl text-left transition-all group flex items-center justify-between"
+                >
+                  <div className="flex items-center space-x-3">
+                    <img
+                      src={MOCK_USERS[6].avatar}
+                      alt={MOCK_USERS[6].name}
+                      className="h-10 w-10 rounded-xl object-cover ring-2 ring-amber-500/50"
+                    />
+                    <div>
+                      <div className="flex items-center space-x-2">
+                        <span className="font-bold text-xs text-white">{MOCK_USERS[6].name}</span>
+                        <span className="px-2 py-0.5 rounded text-[9px] font-extrabold bg-amber-500/20 text-amber-400 border border-amber-500/30 animate-pulse">
+                          Chờ Chủ Hụi Duyệt
+                        </span>
+                      </div>
+                      <div className="text-[11px] text-slate-400 font-mono space-x-2">
+                        <span>SĐT: {MOCK_USERS[6].phone}</span>
+                      </div>
+                    </div>
+                  </div>
+                  <ArrowRight className="h-4 w-4 text-amber-400 group-hover:translate-x-1 transition-transform shrink-0" />
+                </button>
+              )}
             </div>
           )}
 

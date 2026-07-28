@@ -9,6 +9,7 @@ export const MOCK_USERS: User[] = [
     role: 'chu_hui',
     avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     verified: true,
+    accountApprovalStatus: 'approved',
     address: '123 Đường Nguyễn Trãi, Phường Bến Thành, Quận 1, TP. Hồ Chí Minh',
     bankName: 'MB Bank (Ngân Hàng Quân Đội)',
     accountNumber: '0908123456888',
@@ -22,6 +23,7 @@ export const MOCK_USERS: User[] = [
     role: 'hui_vien',
     avatar: 'https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&auto=format&fit=crop&q=80',
     verified: true,
+    accountApprovalStatus: 'approved',
     address: '456 Lê Văn Sỹ, Phường 12, Quận 3, TP. Hồ Chí Minh',
   },
   {
@@ -32,6 +34,7 @@ export const MOCK_USERS: User[] = [
     role: 'hui_vien',
     avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80',
     verified: true,
+    accountApprovalStatus: 'approved',
   },
   {
     id: 'u_mem_3',
@@ -41,6 +44,7 @@ export const MOCK_USERS: User[] = [
     role: 'hui_vien',
     avatar: 'https://images.unsplash.com/photo-1517841905240-472988babdf9?w=150&auto=format&fit=crop&q=80',
     verified: true,
+    accountApprovalStatus: 'approved',
   },
   {
     id: 'u_mem_4',
@@ -50,6 +54,7 @@ export const MOCK_USERS: User[] = [
     role: 'hui_vien',
     avatar: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80',
     verified: true,
+    accountApprovalStatus: 'approved',
   },
   {
     id: 'u_mem_5',
@@ -59,6 +64,31 @@ export const MOCK_USERS: User[] = [
     role: 'hui_vien',
     avatar: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=150&auto=format&fit=crop&q=80',
     verified: true,
+    accountApprovalStatus: 'approved',
+  },
+  {
+    id: 'u_pending_1',
+    phone: '0909998877',
+    email: 'minh.nguyen@gmail.com',
+    name: 'Nguyễn Văn Minh (Chờ Duyệt)',
+    role: 'hui_vien',
+    avatar: 'https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?w=150&auto=format&fit=crop&q=80',
+    verified: false,
+    accountApprovalStatus: 'pending_approval',
+    address: '789 Cách Mạng Tháng 8, Quận 10, TP. Hồ Chí Minh',
+    registeredAt: '2026-07-27T20:15:00Z',
+  },
+  {
+    id: 'u_pending_2',
+    phone: '0938887766',
+    email: 'hoa.le@gmail.com',
+    name: 'Lê Thị Hoa (Chờ Duyệt)',
+    role: 'hui_vien',
+    avatar: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=150&auto=format&fit=crop&q=80',
+    verified: false,
+    accountApprovalStatus: 'pending_approval',
+    address: '101 Nguyễn Đình Chiểu, Quận 3, TP. Hồ Chí Minh',
+    registeredAt: '2026-07-27T21:30:00Z',
   }
 ];
 

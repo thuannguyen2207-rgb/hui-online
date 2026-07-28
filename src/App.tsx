@@ -20,6 +20,8 @@ import { FinancialCalculatorView } from './components/FinancialCalculatorView';
 import { DatabaseSchemaView } from './components/DatabaseSchemaView';
 import { ApiSpecsView } from './components/ApiSpecsView';
 import { MobileContainer } from './components/MobileContainer';
+import { PendingApprovalScreen } from './components/PendingApprovalScreen';
+import { PendingUsersApprovalModal } from './components/PendingUsersApprovalModal';
 import { PlusCircle, ShieldCheck, UserCheck, Coins, Sparkles, ChevronRight, ChevronLeft, Layers, Sliders } from 'lucide-react';
 
 export function App() {
@@ -31,13 +33,64 @@ export function App() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
+  // Users List State (including newly registered users & approval statuses)
+  const [allUsers, setAllUsers] = useState<User[]>(MOCK_USERS);
+  const [isPendingUsersModalOpen, setIsPendingUsersModalOpen] = useState(false);
+
+  // Handle Login or Registration Success
+  const handleLoginOrRegisterSuccess = (user: User) => {
+    setAllUsers(prev => {
+      const exists = prev.some(u => u.id === user.id || u.phone === user.phone || (u.email && user.email && u.email.toLowerCase() === user.email.toLowerCase()));
+      if (exists) {
+        return prev.map(u => {
+          if (u.id === user.id || u.phone === user.phone || (u.email && user.email && u.email.toLowerCase() === user.email.toLowerCase())) {
+            return { ...u, ...user };
+          }
+          return u;
+        });
+      }
+      return [user, ...prev];
+    });
+
+    const existingInList = allUsers.find(
+      u => u.id === user.id || u.phone === user.phone || (u.email && user.email && u.email.toLowerCase() === user.email.toLowerCase())
+    );
+
+    setCurrentUser(existingInList || user);
+  };
+
+  // Re-check approval status for current logged-in user
+  const handleRefreshUserApprovalStatus = () => {
+    if (!currentUser) return;
+    const updated = allUsers.find(u => u.id === currentUser.id || u.phone === currentUser.phone || (u.email && currentUser.email && u.email.toLowerCase() === currentUser.email.toLowerCase()));
+    if (updated) {
+      setCurrentUser(updated);
+    }
+  };
+
+  // Host approves a pending user account
+  const handleApproveUserAccount = (userId: string) => {
+    setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, accountApprovalStatus: 'approved' } : u));
+    if (currentUser?.id === userId) {
+      setCurrentUser(prev => prev ? { ...prev, accountApprovalStatus: 'approved' } : null);
+    }
+  };
+
+  // Host rejects a pending user account
+  const handleRejectUserAccount = (userId: string) => {
+    setAllUsers(prev => prev.map(u => u.id === userId ? { ...u, accountApprovalStatus: 'rejected' } : u));
+    if (currentUser?.id === userId) {
+      setCurrentUser(prev => prev ? { ...prev, accountApprovalStatus: 'rejected' } : null);
+    }
+  };
+
   // Supabase Auth Session listener
   useEffect(() => {
     // Check initial active session
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session?.user?.email) {
         const email = session.user.email;
-        const matchedUser: User = MOCK_USERS.find(
+        const matchedUser: User = allUsers.find(
           u => u.email?.toLowerCase() === email.toLowerCase()
         ) || {
           id: session.user.id,
@@ -47,6 +100,7 @@ export function App() {
           role: email.includes('chuhui') ? 'chu_hui' : 'hui_vien',
           avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
           verified: true,
+          accountApprovalStatus: 'pending_approval',
           bankName: 'MB Bank',
           accountNumber: '0908123456888',
           accountName: email.split('@')[0].toUpperCase()
@@ -59,7 +113,7 @@ export function App() {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session?.user?.email) {
         const email = session.user.email;
-        const matchedUser: User = MOCK_USERS.find(
+        const matchedUser: User = allUsers.find(
           u => u.email?.toLowerCase() === email.toLowerCase()
         ) || {
           id: session.user.id,
@@ -69,13 +123,14 @@ export function App() {
           role: email.includes('chuhui') ? 'chu_hui' : 'hui_vien',
           avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
           verified: true,
+          accountApprovalStatus: 'pending_approval'
         };
         setCurrentUser(matchedUser);
       }
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [allUsers]);
 
   // Hui System Data State
   const [huiDays, setHuiDays] = useState<HuiDay[]>(MOCK_HUI_DAYS);
@@ -727,6 +782,8 @@ export function App() {
         onOpenUserSettingsModal={() => setIsUserSettingsModalOpen(true)}
         onOpenLiveBiddingModal={() => setIsLiveBiddingModalOpen(true)}
         onOpenExtendedServicesModal={() => setIsExtendedServicesModalOpen(true)}
+        onOpenPendingUsersModal={() => setIsPendingUsersModalOpen(true)}
+        pendingUsersCount={allUsers.filter(u => u.accountApprovalStatus === 'pending_approval').length}
         onOpenAuthModal={() => setIsAuthModalOpen(true)}
         onLogout={async () => {
           await supabase.auth.signOut();
@@ -737,7 +794,17 @@ export function App() {
       {/* Main Content Area */}
       <main className="flex-1">
         {!currentUser ? (
-          <LoginScreen onLoginSuccess={(user) => setCurrentUser(user)} />
+          <LoginScreen onLoginSuccess={handleLoginOrRegisterSuccess} />
+        ) : (currentUser.accountApprovalStatus === 'pending_approval' || currentUser.accountApprovalStatus === 'rejected') ? (
+          <PendingApprovalScreen
+            currentUser={currentUser}
+            onRefreshStatus={handleRefreshUserApprovalStatus}
+            onLogout={async () => {
+              await supabase.auth.signOut();
+              setCurrentUser(null);
+            }}
+            onSwitchToDemoHost={() => setCurrentUser(allUsers[0])}
+          />
         ) : activeView === 'app' ? (
           <MobileContainer isMobileFrame={isMobileFrame}>
             
@@ -953,7 +1020,15 @@ export function App() {
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
         currentUser={currentUser}
-        onLoginSuccess={(user) => setCurrentUser(user)}
+        onLoginSuccess={handleLoginOrRegisterSuccess}
+      />
+
+      <PendingUsersApprovalModal
+        isOpen={isPendingUsersModalOpen}
+        onClose={() => setIsPendingUsersModalOpen(false)}
+        users={allUsers}
+        onApproveUser={handleApproveUserAccount}
+        onRejectUser={handleRejectUserAccount}
       />
 
       <CreateHuiModal
