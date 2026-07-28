@@ -174,7 +174,7 @@ export async function loginWithSupabasePassword(
   }
 }
 
-export async function upsertUserInSupabase(user: User, password?: string): Promise<boolean> {
+export async function upsertUserInSupabase(user: User, password?: string): Promise<{ success: boolean; error?: string }> {
   try {
     const payload: any = {
       id: user.id,
@@ -202,36 +202,14 @@ export async function upsertUserInSupabase(user: User, password?: string): Promi
       .upsert(payload, { onConflict: 'id' });
 
     if (error) {
-      console.warn('First profile upsert failed, attempting fallback on profiles/users:', error.message || error);
-      
-      const minimalPayload: any = {
-        id: user.id,
-        phone: user.phone,
-        email: user.email || null,
-        name: user.name,
-        role: user.role,
-        avatar: user.avatar,
-        updated_at: new Date().toISOString()
-      };
-
-      if (password) {
-        minimalPayload.password = password;
-      }
-
-      const { error: minErr } = await supabase
-        .from('profiles')
-        .upsert(minimalPayload, { onConflict: 'id' });
-
-      if (minErr) {
-        await supabase
-          .from('users')
-          .upsert(minimalPayload, { onConflict: 'id' });
-      }
+      console.error('Profile upsert failed:', error);
+      return { success: false, error: error.message };
     }
-    return true;
+
+    return { success: true };
   } catch (err) {
-    console.warn('Upsert user exception caught safely:', err);
-    return false;
+    console.error('Profile upsert exception:', err);
+    return { success: false, error: err instanceof Error ? err.message : 'Không thể lưu hồ sơ đăng ký.' };
   }
 }
 
@@ -277,7 +255,9 @@ function mapDbUserToUser(row: any): User {
     role: row.role === 'chu_hui' ? 'chu_hui' : 'hui_vien',
     avatar: row.avatar || 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
     verified: row.verified ?? true,
-    accountApprovalStatus: row.account_approval_status || row.accountApprovalStatus || 'approved',
+    accountApprovalStatus: ((row.account_approval_status || row.accountApprovalStatus) === 'pending'
+      ? 'pending_approval'
+      : (row.account_approval_status || row.accountApprovalStatus || 'approved')) as User['accountApprovalStatus'],
     registeredAt: row.registered_at || row.created_at || new Date().toISOString(),
     bankName,
     bankCode,
