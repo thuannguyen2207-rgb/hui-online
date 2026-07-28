@@ -45,6 +45,7 @@ export function App() {
 
   // User Auth State - Initially starts at null to force login first
   const [currentUser, setCurrentUser] = useState<User | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   // Users List State (including newly registered users & approval statuses)
@@ -167,53 +168,55 @@ export function App() {
     }
   };
 
-  // Supabase Auth Session listener
+  // Restore a persisted mobile session before rendering the login route.
   useEffect(() => {
-    // Check initial active session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session?.user?.email) {
-        const email = session.user.email;
-        const matchedUser: User = allUsers.find(
-          u => u.email?.toLowerCase() === email.toLowerCase()
-        ) || {
-          id: session.user.id,
-          phone: session.user.phone || '0908123456',
-          email: email,
-          name: email.split('@')[0] || 'Hội Viên Supabase',
-          role: email.includes('chuhui') ? 'chu_hui' : 'hui_vien',
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-          verified: true,
-          accountApprovalStatus: 'pending_approval',
-          bankName: 'MB Bank',
-          accountNumber: '0908123456888',
-          accountName: email.split('@')[0].toUpperCase()
-        };
-        setCurrentUser(matchedUser);
-      }
-    });
+    let active = true;
 
-    // Subscribe to auth state changes
+    const setSessionUser = async (session: Awaited<ReturnType<typeof supabase.auth.getSession>>['data']['session']) => {
+      if (!active) return;
+      if (!session?.user?.email) {
+        setCurrentUser(null);
+        return;
+      }
+
+      const users = await fetchUsersFromSupabase();
+      if (!active) return;
+      setAllUsers((current) => users.length > 0 ? users : current);
+
+      const email = session.user.email.toLowerCase();
+      const matchedUser = users.find((user) => user.email?.toLowerCase() === email) || {
+        id: session.user.id,
+        phone: session.user.phone || '0908123456',
+        email: session.user.email,
+        name: email.split('@')[0] || 'Hội Viên Supabase',
+        role: email.includes('chuhui') ? 'chu_hui' : 'hui_vien',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        verified: true,
+        accountApprovalStatus: 'pending_approval' as const,
+      };
+      setCurrentUser(matchedUser);
+    };
+
+    const restoreSession = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        await setSessionUser(session);
+      } finally {
+        if (active) setIsAuthLoading(false);
+      }
+    };
+
+    void restoreSession();
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
-      if (session?.user?.email) {
-        const email = session.user.email;
-        const matchedUser: User = allUsers.find(
-          u => u.email?.toLowerCase() === email.toLowerCase()
-        ) || {
-          id: session.user.id,
-          phone: session.user.phone || '0908123456',
-          email: email,
-          name: email.split('@')[0] || 'Hội Viên Supabase',
-          role: email.includes('chuhui') ? 'chu_hui' : 'hui_vien',
-          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
-          verified: true,
-          accountApprovalStatus: 'pending_approval'
-        };
-        setCurrentUser(matchedUser);
-      }
+      void setSessionUser(session);
+      if (active) setIsAuthLoading(false);
     });
 
-    return () => subscription.unsubscribe();
-  }, [allUsers]);
+    return () => {
+      active = false;
+      subscription.unsubscribe();
+    };
+  }, []);
 
   // Extended Financial Services State
   const [p2pLoans, setP2pLoans] = useState<P2PLoan[]>([]);
@@ -535,9 +538,14 @@ export function App() {
     }
   };
 
+  // Do not route mobile users to login until Supabase has restored local storage.
+  if (isAuthLoading) {
+    return <div className="min-h-screen bg-slate-950" aria-busy="true" />;
+  }
+
   // IF NOT LOGGED IN -> SHOW LOGIN SCREEN FIRST
   if (!currentUser) {
-    return <LoginScreen onLoginSuccess={(user) => setCurrentUser(user)} />;
+    return <LoginScreen onLoginSuccess={handleLoginOrRegisterSuccess} />;
   }
 
   // Active Selected Hui Day
