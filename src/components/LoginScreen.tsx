@@ -42,8 +42,8 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({
 }) => {
   const [authTab, setAuthTab] = useState<'login' | 'register'>(initialAuthTab);
   // Login State
-  const [loginIdentifier, setLoginIdentifier] = useState('0908123456');
-  const [loginPassword, setLoginPassword] = useState('123456');
+  const [loginIdentifier, setLoginIdentifier] = useState('');
+  const [loginPassword, setLoginPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
 
   // OTP Login & Verification State
