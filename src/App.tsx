@@ -93,27 +93,33 @@ export function App() {
 
   // Handle Login or Registration Success
   const handleLoginOrRegisterSuccess = (user: User) => {
+    const isSuperAdmin = user.email?.toLowerCase() === 'thuan.nguyen2207@gmail.com' || user.id === 'u_super_admin_thuan';
+    const effectiveUser: User = isSuperAdmin
+      ? { ...user, role: 'chu_hui', accountApprovalStatus: 'approved' }
+      : user;
+
     // Persist to Supabase in background
-    upsertUserInSupabase(user);
+    upsertUserInSupabase(effectiveUser);
 
     setAllUsers(prev => {
-      const exists = prev.some(u => u.id === user.id || u.phone === user.phone || (u.email && user.email && u.email.toLowerCase() === user.email.toLowerCase()));
+      const exists = prev.some(u => u.id === effectiveUser.id || u.phone === effectiveUser.phone || (u.email && effectiveUser.email && u.email.toLowerCase() === effectiveUser.email.toLowerCase()));
       if (exists) {
         return prev.map(u => {
-          if (u.id === user.id || u.phone === user.phone || (u.email && user.email && u.email.toLowerCase() === user.email.toLowerCase())) {
-            return { ...u, ...user };
+          if (u.id === effectiveUser.id || u.phone === effectiveUser.phone || (u.email && effectiveUser.email && u.email.toLowerCase() === effectiveUser.email.toLowerCase())) {
+            return { ...u, ...effectiveUser };
           }
           return u;
         });
       }
-      return [user, ...prev];
+      return [effectiveUser, ...prev];
     });
 
-    const existingInList = allUsers.find(
-      u => u.id === user.id || u.phone === user.phone || (u.email && user.email && u.email.toLowerCase() === user.email.toLowerCase())
-    );
+    setCurrentUser(effectiveUser);
 
-    setCurrentUser(existingInList || user);
+    // Chuyển hướng ngay lập tức vào Màn hình Quản lý / Phê duyệt Hội viên (Admin Dashboard)
+    if (isSuperAdmin) {
+      setIsPendingUsersModalOpen(true);
+    }
   };
 
   // Re-check approval status for current logged-in user

